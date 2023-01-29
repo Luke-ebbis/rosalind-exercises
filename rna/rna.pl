@@ -35,7 +35,7 @@ sub transcribe_string_to_rna {
     my ($string) = @_;
     $string = uc $string;
     # Using the tr function to replace characters.
-    $string =~ tr/A/U/;
+    $string =~ tr/T/U/;
     return $string;
 }
 
