@@ -9,8 +9,6 @@ input_string = split(input_lines[1], " ")
 arguments = map((x) -> parse(Int, x),
                 input_string)
 n, k = arguments
-print("n = $n, k = $k\n")
-
 
 population = [1, 0]
 current_month = 1
@@ -27,3 +25,4 @@ while current_month < n
     
 end
 
+print(first(population))
