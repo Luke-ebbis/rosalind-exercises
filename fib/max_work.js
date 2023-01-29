@@ -1,4 +1,14 @@
 #! /usr/bin/env node
+/**Script written by Max Bakker
+ *
+ * This is a script written by Max Bakker (@MaxBaktBrood) to give me an example
+ * of a java script programme. This script was written by him on the 27th of
+ * January, 2022. 
+ *
+ * Currently the script holds solutions in javascript for the rosalind
+ * exercises up until and including the gc content calculation -- S.
+**/
+
 const { start } = require('repl');
 
 /**
