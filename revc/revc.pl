@@ -37,14 +37,22 @@ sub reverse_complement_dna {
     my $dna = is_standard_dna($input) ? $input : 
         die("The input string is not a standard DNA molecule.");
     my $dna_reverse = reverse($dna);
+
+    # Define a character change mapping. Here a regular expression style
+    # replacement is used, meaning that the replacement characters are 
+    # obtained from the hash keys, while the replacement part is gotten from
+    # the capture group that is currently active, obtained from the $1
+    # variable.
     my %complement_map = (
         A => 'T',
         T => 'A',
         C => 'G',
-        G => 'C',
-    );
+        G => 'C');
+
     my $replacements = join('', keys(%complement_map));
+    # performing the replacement: s(substitute)/(capture)/<replace>/g(lobal)
     $dna_reverse =~ s/([$replacements])/$complement_map{$1}/g;
+
     return $dna_reverse
 }
 
