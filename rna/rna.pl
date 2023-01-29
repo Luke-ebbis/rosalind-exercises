@@ -1,6 +1,8 @@
 #! /usr/bin/env perl
 #'@title Transcribing a DNA sequence.
 #'@author Sibbe Bakker
+#'@usage After making this script executable, you can use it as follows:
+#' ./rna.pl <text file>
 #'@description The solution to rosalind exercise 
 #' https://rosalind.info/problems/rna/. Here a string of DNA is translated 
 #' into RNA by replacing all occurrences of T into U.
