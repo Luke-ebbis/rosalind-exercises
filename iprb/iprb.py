@@ -10,12 +10,13 @@ theory --- In a population there is mating of genetic individuals. Using
         homozygous recessive (n) number of individuals.
 usage      This script is used to calculate the chance of a dominant allele
         in a population using three numbers as input: k, m and n:
-
+       
+        ```bash
             ./iprb.py <k> <m> <n>
 
             ./iprb.py 2 2 2
-            |> 0.78333
-
+            0.78333
+        ```
 rosalind --- https://rosalind.info/problems/iprb/
 sources --- http://saradoesbioinformatics.blogspot.com/2016/06/mendels-first-
     law.html.
@@ -46,8 +47,12 @@ def main():
 
     # Calculations
     # chance_dominant = simulation_dominant_phenotype(k, m, n, times=2000)
-    chance_dominant = probability_tree(k, m, n,
-                                       offspring_genotype=("k", "m",))
+    # I got the formula from sara; I need to figure out how this works; mendels
+    # law is difficult for me.
+    pop = sum([k, m, n])
+    chance_dominant = (4*(k*(k-1)+2*k*m+2*k*n+m*n)+3*m*(m-1))/(4*pop*(pop-1))
+    # chance_dominant = probability_tree(k, m, n,
+    #                                    offspring_genotype=("k", "m",))
     print(chance_dominant, file=sys.stdout)
     sys.exit(0)
 
@@ -96,6 +101,8 @@ def probability_tree(k, m, n, offspring_genotype=("k", "m",)) -> float:
         random mating event.
     theory --- To obtain the chance of selecting to mating partners the chance
         of selecting any one of them must be multiplied.
+    linkout --- http://saradoesbioinformatics.blogspot.com/2016/06/mendels-
+        first-law.html
     """
     specified = set(offspring_genotype)
     assert specified.issubset({'k', 'n', 'm'}),\
