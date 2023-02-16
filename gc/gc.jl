@@ -2,10 +2,14 @@
 #=Determining the CG content of a DNA string
 =#
 
+
+
+"""
+    main()
+
+This is the main procedure.
+"""
 function main()
-    #= The main procedure
-    :return: To standard out.
-    =#
 
     # if length(ARGS) != 2
     #     println("usage: $PROGRAM_FILE  <data> \n"*
@@ -17,20 +21,63 @@ function main()
     # n, k = map((x) -> parse(Int, x), input_strings)
 
     #TODO make the string uppercase
-    enumerate_characters("AASSSCC")
+    input = open("./test.fasta", "r")
+    data = parse_fasta(input)
+    println(data)
     exit(0)
+end
+
+
+"""
+    parse_fasta(inputObject::IOStream)
+
+Parse a fasta file, return a list of Dna data types.
+
+...
+# Arguments
+- `inputObject::IOStream`: An open fasta file object.
+...
+
+# Example
+```julia
+```
+
+
+"""
+function parse_fasta(inputObject :: IOStream)
+    fasta_list = Dna[]
+    sequence, identifier, comment = String[], "", ""
+    for line in eachline(inputObject)
+        clean_line = strip(line)
+
+        if startswith(clean_line, ">")
+            header = replace(clean_line, ">" => "")
+            println("found header \t $header")
+            if contains(clean_line, " ")
+                (identifier, comment) = split(header, limit=2)
+            else
+                identifier = header
+                comment = ""
+            end
+            sequence = String[]
+        else
+            push!(sequence, clean_line)
+            println(sequence)
+        end
+    end
+    return fasta_list
 end
 
 """A datatype for DNA
 
 :param sequence: String: The sequence of the DNA.
 :param: identifier: String: identifier of the DNA.
-:param:  comment: 
+:param:  comment: The comment of the DNA string.
 """
 struct Dna
-    sequence::String
-    identifier::String
-    comment::String
+    sequence::AbstractString
+    identifier::AbstractString
+    comment::AbstractString
     # Checking Wether the DNA is valid.
     Dna(sequence::String, identifier::String, comment::String) =
         validate_dna(sequence) ? new(sequence, identifier, comment) :
@@ -52,7 +99,7 @@ end
 """Counting the characters in a string
 
 :param string: String: A string to be analysed.
-:return: Dict{Char, Int}: A dictionary where each letter is a key and 
+:return: Dict{Char, Int}: A dictionary where each letter is a key and the value is the amount of occurrences of that letter.
 """
 function enumerate_characters(string::String)
     result = Dict{Char, Int}()
