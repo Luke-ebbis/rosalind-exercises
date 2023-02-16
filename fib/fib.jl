@@ -7,6 +7,22 @@ description --- The rosalind problem https://rosalind.info/problems/fib/
 =#
 
 
+"""
+    recursive_rabbits_population(;n::Int,k::Int)
+
+Compute the amount of rabbits after `n` generations with a breeding rate of
+`k`.
+
+# Arguments
+- `n::Int`: The number of generations.
+- `k::Int`: The breeding rate of each rabbit pair.
+
+# Example
+```julia-repl
+julia> recursive_rabbits_population(n=20,k=2)
+349525
+```
+"""
 function recursive_rabbits_population(;
     n::Int,
     k::Int)
