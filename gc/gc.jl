@@ -21,20 +21,40 @@ function main()
     exit(0)
 end
 
-function validate_dna(string::String)
-    #=Validating DNA input
+"""A datatype for DNA
+
+:param sequence: String: The sequence of the DNA.
+:param: identifier: String: identifier of the DNA.
+:param:  comment: 
+"""
+struct Dna
+    sequence::String
+    identifier::String
+    comment::String
+    # Checking Wether the DNA is valid.
+    Dna(sequence::String, identifier::String, comment::String) =
+        validate_dna(sequence) ? new(sequence, identifier, comment) :
+        throw(ArgumentError("Sequence of $identifier is invalid."))
+end
+
+# utilities
+"""Validating DNA input
 
     :param string: String The string to be validated. 
     :return: Bool: 1 If the string is a valid DNA string, 0 otherwise.
-    =#
+"""
+function validate_dna(string::String)
     accepted_letters = Set(['A', 'T', 'C', 'G'])
     accepted_chars = map(x -> issubset(x, accepted_letters), collect(string))
     return all(accepted_chars)
 end
 
+"""Counting the characters in a string
+
+:param string: String: A string to be analysed.
+:return: Dict{Char, Int}: A dictionary where each letter is a key and 
+"""
 function enumerate_characters(string::String)
-    #=Counting the number of unqiue characters in a given string
-    =#
     result = Dict{Char, Int}()
     for char in string
         # In case the letter has been found; add to the tally
