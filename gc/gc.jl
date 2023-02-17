@@ -11,22 +11,30 @@ This is the main procedure.
 """
 function main()
 
-    # if length(ARGS) != 2
-    #     println("usage: $PROGRAM_FILE  <data> \n"*
-    #             "data \t The number of generations." )
-    #     exit(1)
-    # end
+    if length(ARGS) != 1
+        println("usage: $PROGRAM_FILE  <fasta> \n"*
+                "fasta \t File path to a fasta file." )
+        exit(1)
+    end
 
-    # input_strings = ARGS
-    # n, k = map((x) -> parse(Int, x), input_strings)
+    arg  = join(ARGS)
+    if isfile(arg)
+        input = open(arg, "r")
+    else
+        throw("provided $arg is not a valid file.") 
+    end
 
-    #TODO make the string uppercase
-    input = open("./test.fasta", "r")
     data = parse_fasta(input)
-    println(data)
+    gc_values = map(x -> (x.identifier, calculate_gc(x)), data)
+    sort!(gc_values,
+          by=x->x[2])
+    max_gc = last(gc_values)
+    println(max_gc[1], "\n",  max_gc[2])
     exit(0)
 end
 
+
+# Functions -----------------------------------------------------------------
 
 """
     parse_fasta(inputObject::IOStream)
@@ -35,14 +43,9 @@ Parse a fasta file, return a list of Dna data types.
 
 ...
 # Arguments
-- `inputObject::IOStream`: An open fasta file object.
+- `inputObject::IOStream`: An open fasta file object. As created with the
+`open()` function.
 ...
-
-# Example
-```julia
-```
-
-
 """
 function parse_fasta(inputObject :: IOStream)
     fastas = Dict()
@@ -82,9 +85,12 @@ end
 
 """A datatype for DNA
 
-:param sequence: String: The sequence of the DNA.
+:param sequence: String: The sequence of the DNA. Lowercase letters are
+automatically converted to uppercase letters.
 :param: identifier: String: identifier of the DNA.
 :param:  comment: The comment of the DNA string.
+
+depends --- validate_dna()
 """
 struct Dna
     sequence::AbstractString
@@ -92,15 +98,16 @@ struct Dna
     comment::AbstractString
     # Checking Wether the DNA is valid.
     Dna(sequence::String, identifier::String, comment::String) =
-        validate_dna(sequence) ? new(sequence, identifier, comment) :
+    validate_dna(uppercase(sequence)) ? 
+        new(uppercase(sequence), identifier, comment) :
         throw(ArgumentError("Sequence of $identifier is invalid."))
 end
 
 # utilities
 """Validating DNA input
 
-    :param string: String The string to be validated. 
-    :return: Bool: 1 If the string is a valid DNA string, 0 otherwise.
+:param string: String The string to be validated. 
+:return: Bool: 1 If the string is a valid DNA string, 0 otherwise.
 """
 function validate_dna(string::String)
     accepted_letters = Set(['A', 'T', 'C', 'G'])
@@ -126,6 +133,23 @@ function enumerate_characters(string::String)
     end
     return result
 end
+
+"""
+    calculate_gc(dna::Dna)
+
+Calculate the GC percentage of a Dna object.
+
+# Arguments
+- `dna::Dna`: The Dna object to be investigated.
+"""
+function calculate_gc(dna :: Dna)
+    counts = enumerate_characters(dna.sequence)
+    sum_counts = counts['A'] + counts['T'] + counts['G'] + counts['C']
+    gc_counts = counts['G'] + counts['C']
+    cg_percentage = (gc_counts / sum_counts) * 100
+    return cg_percentage
+end
+
 
 if abspath(PROGRAM_FILE) == @__FILE__
     # only executing the main function as a script
