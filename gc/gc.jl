@@ -45,14 +45,14 @@ Parse a fasta file, return a list of Dna data types.
 
 """
 function parse_fasta(inputObject :: IOStream)
-    fasta_list = Dna[]
+    fastas = Dict()
+
     sequence, identifier, comment = String[], "", ""
     for line in eachline(inputObject)
         clean_line = strip(line)
 
         if startswith(clean_line, ">")
             header = replace(clean_line, ">" => "")
-            println("found header \t $header")
             if contains(clean_line, " ")
                 (identifier, comment) = split(header, limit=2)
             else
@@ -60,12 +60,24 @@ function parse_fasta(inputObject :: IOStream)
                 comment = ""
             end
             sequence = String[]
+            fastas[identifier] = ([], comment)
         else
-            push!(sequence, clean_line)
-            println(sequence)
+            push!(fastas[identifier][1], clean_line)
         end
     end
-    return fasta_list
+    
+    dnas = []
+    for item in fastas
+        name = item[1]
+        comment = item[2][2]
+        sequence = join(item[2][1])
+        push!(dnas,
+              Dna(sequence,
+                  String(name),
+                  String(comment))
+             )
+    end
+    return dnas
 end
 
 """A datatype for DNA
