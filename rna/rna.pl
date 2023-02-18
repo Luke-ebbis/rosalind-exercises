@@ -4,7 +4,7 @@
 #'@usage After making this script executable, you can use it as follows:
 #' ./rna.pl <text file>
 #'@description The solution to rosalind exercise 
-#' https://rosalind.info/problems/rna/. Here a string of DNA is translated 
+#' https://rosalind.info/problems/rna/. Here a string of DNA is transcribed 
 #' into RNA by replacing all occurrences of T into U.
 
 use strict;
@@ -29,7 +29,7 @@ sub is_standard_dna {
 sub transcribe_string_to_rna {
     #'@title transcribing a string into RNA.
     #'@param $string A string of DNA. String can be lower case or upper case.
-    #'@return $string The RNA string translated from the string given
+    #'@return $string The RNA string transcribed from the string given
     #' as input.
 
     my ($string) = @_;
@@ -42,7 +42,7 @@ sub transcribe_string_to_rna {
 sub transcribe_dna_to_rna {
     #'@title transcribing a string into RNA.
     #'@param $string A string of DNA. String can be lower case or upper case.
-    #'@return $string The RNA string translated from the DNA string given
+    #'@return $string The RNA string transcribed from the DNA string given
     #' as input.
     #'@description This function will only work for strings containing the
     #' standard bases of DNA: ACGT.

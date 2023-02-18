@@ -11,9 +11,9 @@
          ./name file -filter     Take from standard in, give to file
          ./name file1 file2      Take from file1, write to file two
 """
-import sys, os
+import sys
 
-arguments = sys.argv[1:]
+arguments = sys.argv[1:] 
 
 
 def calculate_rabbit_population(n: int, k: int) -> int:

@@ -21,7 +21,7 @@ sub calculate_population_recursive_rabbits{
     # say "Using a breeding rate of $k over $n generations.";
     
     my @population = (1, 0);
-    my $n_current = 1;
+    my $n_current = 1; 
     while ($n_current < $n) {
         $population[1] = $population[0] + $population[1] * $k;
         my $current_population = $population[1];
@@ -48,5 +48,6 @@ sub main {
 
 unless (caller) {
     # Execute the main function is this is the code being run
-    main()
+    main();
+    exit ;
 }

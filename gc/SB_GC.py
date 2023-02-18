@@ -21,6 +21,10 @@ arguments = sys.argv[1:]
 
 
 def take_input() -> str:
+    """take_input.
+
+    :rtype: str
+    """
     input = ''
     if '-filter' in arguments:
         # Take from STDIN; ignore files that are given.
@@ -41,22 +45,22 @@ def take_input() -> str:
 
 def give_out(output) -> None:
     fileout = ''
-    STOUT = False  # a flag to indicate whether there is output written to STDout
+    stoud = False  # a flag to indicate whether there is output written to STDout
     if '-filter' in arguments:
         if len(arguments) == 1:
             fileout = arguments[0]
             sys.stdout.write(output)
-            STOUT = True
+            stoud = True
         else:
             fileout = arguments[0]
 
     elif len(arguments) == 1:
         fileout = arguments[0]
         sys.stdout.write(output)
-        STOUT = True
+        stoud = True
     else:
         fileout = arguments[1]
-    if STOUT == False:
+    if stoud == False:
         assert os.path.exists(fileout) == False, \
             f"The output file {fileout!r} cannot be used as it exists."
         with open(fileout, 'w') as out:

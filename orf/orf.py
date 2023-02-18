@@ -80,6 +80,7 @@ def take_input() -> str:
     assert input != '', ValueError("Input could not be taken.")
     return input
 
+
 def give_out(output: str) -> None:
     """2022-11-06              PYTHON FUNCTION                       give_out()
     A FUNCTION FOR DYNAMIC OUTPUT
@@ -224,6 +225,7 @@ def find_orfs(s:str) -> list:
             frames_list.append(match_obj.group(1))
     return frames_list
 
+
 def find_orfs_no_regex(s:str) -> tuple:
     """
     FINDING THE OPEN READING FRAMES IN A DNA STRING (no regex, no issues!)
@@ -286,7 +288,6 @@ def find_orfs_no_regex(s:str) -> tuple:
 
 
 
-
 def main():
     """
     THE MAIN FUNCTION
@@ -307,8 +308,8 @@ def main():
     mras = [orf.replace('T', "U") for orf in orfs_flat]
 
     # Make the proteins in a set comprehension to fetch the distinct ones.
-    proteins = {translate_rna(rna) for rna in mras}
-    give_out('\n'.join(proteins) + '\n')
+    protein = {translate_rna(rna) for rna in mras}
+    give_out('\n'.join(protein) + '\n')
 
 if __name__ == '__main__':
     main()

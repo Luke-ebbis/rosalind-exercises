@@ -26,14 +26,6 @@ julia> recursive_rabbits_population(n=20,k=2)
 function recursive_rabbits_population(;
     n::Int,
     k::Int)
-    #=Calculating the population of recursive rabbits.
-
-    :n: int: The number of generations.
-    :k: int: The breeding rate of each rabbit pair.
-    :return: int: The number of rabbits after n generations with a breeding
-        rate of k.
-    =#
-
     population = [1, 0]
     global current_month = 1
     while current_month < n
