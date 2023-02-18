@@ -45,7 +45,7 @@ sub is_standard_rna {
 sub transcribe_string_to_rna {
     #'@title transcribing a string into RNA.
     #'@param $string A string of DNA. String can be lower case or upper case.
-    #'@return $string The RNA string translated from the string given
+    #'@return $string The RNA string transcribed from the string given
     #' as input.
 
     my ($string) = @_;
@@ -97,21 +97,20 @@ sub translate_rna_to_protein {
         'UGG'=> 'W', 'CGG'=> 'R', 'AGG'=> 'R', 'GGG'=> 'G');
     
     my $protein = "";
-
-    for (my $codon_start=0, $codon_start-length($rna)-2; $i+=3)
-    {
-        $codon = substr $rna, $codon_start, 3;
-        # Append to the $protein variable.
-        $protein
-
-    }
-
-    print $codon_map{'UUG'};
-    # performing the replacement: s(substitute)/(capture)/<replace>/g(lobal)
-    # $protein =~ s/([$replacements])/$codon_map{$1}/g;
+    for(my $i=0;$i<length($rna)-2;$i+=3)
+        {
+         my $codon = substr($rna,$i,3);
+         $protein .= $codon_map{$codon};
+        }
     return $protein
-
 }
+
+sub remove_stop {
+    my ($input) = @_;
+    $input =~ tr/*//d;
+    return $input
+}
+
 
 sub main { #' The main subroutine. 
     #'@input Taken by reading standard in; a text file/stream.
@@ -121,7 +120,8 @@ sub main { #' The main subroutine.
     # my $rna = transcribe_dna_to_rna($input);
     my $rna = uc $input;
     my $protein = translate_rna_to_protein($rna);
-    print STDOUT $protein;
+    my $protein_out = remove_stop($protein);
+    print STDOUT $protein_out, "\n";
 }
 
 main()
