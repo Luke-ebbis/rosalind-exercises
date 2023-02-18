@@ -26,6 +26,20 @@ sub is_standard_dna {
     return $is_dna;
 }
 
+sub is_standard_rna {
+    # Checking whether a string is a standard rna string
+    #@param $string The string of text to be analysed. Can be lower case or
+    #' upper case.
+    #@return Bool True when $string is a valid DNA string. False if $string
+    #' is not a valid DNA string.
+
+    my ($string) = @_;
+    my $is_rna = 0;
+    # tr//x//c counts (tr) how many chrs are not in a set (c)
+    if( 0 == uc($string) =~ tr/ACGU//c ) {$is_rna = 1; } 
+    return $is_rna;
+}
+
 sub transcribe_string_to_rna {
     #'@title transcribing a string into RNA.
     #'@param $string A string of DNA. String can be lower case or upper case.
@@ -55,14 +69,45 @@ sub transcribe_dna_to_rna {
     return $rna
 }
 
-sub main {
-    #' The main subroutine. 
+sub translate_rna_to_protein {
+    #'@title A subroutine to translate rna into protein
+
+    my ($input) = @_;
+    my $protein = is_standard_rna($input) ? $input : 
+        die("Provided input is not RNA");
+    my %codon_map = (
+        # codon => amino acid
+        'UUU'=> 'F', 'CUU'=> 'L', 'AUU'=> 'I', 'GUU'=> 'V',
+        'UUC'=> 'F', 'CUC'=> 'L', 'AUC'=> 'I', 'GUC'=> 'V',
+        'UUA'=> 'L', 'CUA'=> 'L', 'AUA'=> 'I', 'GUA'=> 'V',
+        'UUG'=> 'L', 'CUG'=> 'L', 'AUG'=> 'M', 'GUG'=> 'V',
+        'UCU'=> 'S', 'CCU'=> 'P', 'ACU'=> 'T', 'GCU'=> 'A',
+        'UCC'=> 'S', 'CCC'=> 'P', 'ACC'=> 'T', 'GCC'=> 'A',
+        'UCA'=> 'S', 'CCA'=> 'P', 'ACA'=> 'T', 'GCA'=> 'A',
+        'UCG'=> 'S', 'CCG'=> 'P', 'ACG'=> 'T', 'GCG'=> 'A',
+        'UAU'=> 'Y', 'CAU'=> 'H', 'AAU'=> 'N', 'GAU'=> 'D',
+        'UAC'=> 'Y', 'CAC'=> 'H', 'AAC'=> 'N', 'GAC'=> 'D',
+        'UAA'=> '*', 'CAA'=> 'Q', 'AAA'=> 'K', 'GAA'=> 'E',
+        'UAG'=> '*', 'CAG'=> 'Q', 'AAG'=> 'K', 'GAG'=> 'E',
+        'UGU'=> 'C', 'CGU'=> 'R', 'AGU'=> 'S', 'GGU'=> 'G',
+        'UGC'=> 'C', 'CGC'=> 'R', 'AGC'=> 'S', 'GGC'=> 'G',
+        'UGA'=> '*', 'CGA'=> 'R', 'AGA'=> 'R', 'GGA'=> 'G',
+        'UGG'=> 'W', 'CGG'=> 'R', 'AGG'=> 'R', 'GGG'=> 'G');
+    my $replacements = join('', keys(%codon_map));
+    # performing the replacement: s(substitute)/(capture)/<replace>/g(lobal)
+    $protein =~ s/([$replacements])/$codon_map{$1}/g;
+    return $protein
+
+}
+
+sub main { #' The main subroutine. 
     #'@input Taken by reading standard in; a text file/stream.
     #'@out printed to SDTOUT.
     my $input = <>;
     chomp $input;
     my $rna = transcribe_dna_to_rna($input);
-    print STDOUT $rna;
+    my $protein = translate_rna_to_protein($rna);
+    print STDOUT $protein;
 }
 
 main()
