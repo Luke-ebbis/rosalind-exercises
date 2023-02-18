@@ -5,7 +5,9 @@
 #' ./rna.pl <text file>
 #'@description The solution to rosalind exercise 
 #' https://rosalind.info/problems/rna/. Here a string of DNA is translated 
-#' into RNA by replacing all occurrences of T into U.
+#' into RNA by replacing all occurrences of T into U. Next the RNA string is
+#' translated into protein.
+#'@linkout https://www.biob.in/2010/03/rna-to-protein-translation-in-perl_9.html?sc=1676744323929#c6108513225696985583
 
 use strict;
 use warnings;
@@ -73,7 +75,7 @@ sub translate_rna_to_protein {
     #'@title A subroutine to translate rna into protein
 
     my ($input) = @_;
-    my $protein = is_standard_rna($input) ? $input : 
+    my $rna = is_standard_rna($input) ? $input : 
         die("Provided input is not RNA");
     my %codon_map = (
         # codon => amino acid
@@ -93,9 +95,20 @@ sub translate_rna_to_protein {
         'UGC'=> 'C', 'CGC'=> 'R', 'AGC'=> 'S', 'GGC'=> 'G',
         'UGA'=> '*', 'CGA'=> 'R', 'AGA'=> 'R', 'GGA'=> 'G',
         'UGG'=> 'W', 'CGG'=> 'R', 'AGG'=> 'R', 'GGG'=> 'G');
-    my $replacements = join('', keys(%codon_map));
+    
+    my $protein = "";
+
+    for (my $codon_start=0, $codon_start-length($rna)-2; $i+=3)
+    {
+        $codon = substr $rna, $codon_start, 3;
+        # Append to the $protein variable.
+        $protein
+
+    }
+
+    print $codon_map{'UUG'};
     # performing the replacement: s(substitute)/(capture)/<replace>/g(lobal)
-    $protein =~ s/([$replacements])/$codon_map{$1}/g;
+    # $protein =~ s/([$replacements])/$codon_map{$1}/g;
     return $protein
 
 }
@@ -105,7 +118,8 @@ sub main { #' The main subroutine.
     #'@out printed to SDTOUT.
     my $input = <>;
     chomp $input;
-    my $rna = transcribe_dna_to_rna($input);
+    # my $rna = transcribe_dna_to_rna($input);
+    my $rna = uc $input;
     my $protein = translate_rna_to_protein($rna);
     print STDOUT $protein;
 }
