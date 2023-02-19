@@ -7,8 +7,7 @@ author --- Sibbe Bakker
 """
 function main()
     # The main function.
-    out = kmers("AASHGADKJHAGSDJGASKGD", 3)
-    println(out)
+    print(find_exact_match("GATATATGCATATACTT", "ATAT"))
 end
 
 """
@@ -50,6 +49,7 @@ julia> kmers("AAAAGGGAGGGGCTGCAG", 3)
 """
 function kmers(subject :: String, 
         kmer_size :: Int64) :: Vector{Tuple{String, Tuple{Int64, Int64}}}
+    #TODO specify the kmer list in the same type as the return 
     kmers_list = []
     index_start, index_end = 0, 0
     
@@ -77,6 +77,51 @@ function kmers(subject :: String,
     return kmers_list
 end
 
+"""
+    find_exact_match(subject::String,query::String)::Vector{Int64}
+
+Fetching all starting indices of the query within a subject string (1 indexed)
+using _k_-mer string matching.
+
+# Arguments
+- `subject::String`: String to be searched for `query` matches.
+- `query::String`: The query.
+
+# Throws
+- `ArgumentError` : If length of `query` ≥ `subject`.
+# Depends
+- `kmers()`
+
+# Example
+```julia-repl
+julia> find_exact_match("GATATATGCATATACTT", "ATAT")
+3-element Vector{Int64}
+  2
+  4
+ 10
+```
+"""
+function find_exact_match(subject :: String, query :: String) :: Vector{Int64}
+    starting_locations = []
+    queryₗ = length(query)
+    if length(subject) <= queryₗ 
+       throw(ArgumentError(
+                   "Length of query $(queryₗ) may not be ≥ " *
+                   "length of subject $(length(subject))."
+                 )
+            )
+    end
+
+    # Making kmers
+    kmers_list = kmers(subject, queryₗ)
+    for kmer in kmers_list
+        if kmer[1] == query
+            push!(starting_locations,
+                  kmer[2][1])
+        end
+    end
+    return starting_locations
+end
 
 
 if abspath(PROGRAM_FILE) == @__FILE__
