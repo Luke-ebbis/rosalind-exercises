@@ -7,10 +7,10 @@ function main()
     try
         input = take_file_input()
         data = parse_fasta(input)
-
-        println(data)
+        profile =  profile_matrix(data)
+        println(typeof(profile))
     catch
-        throw("Input file could not be read")
+        throw("Input file could not be analysed.")
     end
 end
 
@@ -33,6 +33,7 @@ function take_file_input()
     arg  = join(ARGS)
     if isfile(arg)
         input = open(arg, "r")
+        return input
     else
         throw("provided $arg is not a valid file.") 
     end
@@ -102,17 +103,91 @@ struct Dna
         throw(ArgumentError("Sequence of $identifier is invalid."))
 end
 
-
-function profile_matrix(sequences :: Vector{Dna}) :: Matrix
+function check_equal_sequence_length(list :: Vector{Dna})
     # Test if all sequences are equal length
+    first_l = length(list[1].sequence)
+    check = map(x -> 
+                first_l != length(x.sequence),
+                list[2:end])
+    if all(check) == true  throw("unequal sequences") end
+    #TODO make this error message say the identifier.
+    # println(list)
+    # if all(check) == false
+    #     shorter_sequences = []
+    #     for i = 1:length(list) - 1
+    #         if check[i] == true
+    #             push!(shorter_sequences,
+    #                   list[i].identifier)
+    #         end
+    #     end
 
-
-
-    return Matrix{Float64}(undef, 2, 3)
+    #     throw("Sequence $shorter_sequences too short.")
+    # end
 end
 
+"""Counting the characters in a string
+:param string: String: A string to be analysed.
+:return: Dict{Char, Int}: A dictionary where each letter is a key and the value is the amount of occurrences of that letter.
+"""
+function enumerate_characters(string::String)
+    result = Dict{Char, Int}()
+    for char in string
+        # In case the letter has been found; add to the tally
+        if haskey(result, char)
+            result[char] += 1
+        else
+            # initiate the tally
+            result[char] = 1
+        end
+    end
+    return result
+end
 
+"""
+    profile_matrix(sequences::Vector{Dna})::Matrix
 
+Construct a profile matrix from a vector of Dna sequences.
+
+...
+# Arguments
+- `sequences::Vector{Dna}::Matrix`: 
+...
+
+# Depends
+
+- `check_equal_sequence_length()`
+
+# Example
+```julia
+```
+"""
+function profile_matrix(Dna_sequences :: Vector{Dna}) :: Tuple{Vector{Char}, 
+                                                               Matrix{Float64}}
+    check_equal_sequence_length(Dna_sequences) 
+    sequences = map(x -> x.sequence, Dna_sequences)
+    sequenceₗ = length(sequences[1])
+    row_names= [] 
+    
+    # Letters are the row names.
+    letters = collect(keys(enumerate_characters(join(sequences))))
+    # Pre-allocate all the values of the array.
+    profile = zeros(length(letters), sequenceₗ)
+    
+    for index = 1:sequenceₗ
+        for sequence_index = 1:length(sequences)
+            for index_character = 1:length(letters)
+                current_char = sequences[sequence_index][index]
+                println(current_char, string(letters[index_character]))
+                if string(current_char) == string(letters[index_character])
+                    profile[index_character, index] += 1
+                    println("seq $sequence_index char $index  $current_char")
+                end
+            end
+        end
+
+    end
+    return (letters, profile)
+end
 
 # utilities
 """Validating DNA input
