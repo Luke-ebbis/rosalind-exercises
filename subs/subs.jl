@@ -7,8 +7,25 @@ author --- Sibbe Bakker
 """
 function main()
     # The main function.
-    print(find_exact_match("GATATATGCATATACTT", "ATAT"))
+    if length(ARGS) != 1
+        println("usage: $PROGRAM_FILE  <input> \n"*
+                "input \t File path to a input file, containing.\n"*
+                "      \t Two lines: first line is the query, second line \n"*
+                "      \t is the query."
+               )
+        exit(1)
+    end
+    input = readlines(ARGS[1])
+    if length(input) == 2
+        subject, query = input
+        match_indices = find_exact_match(subject, query)
+        output = join(match_indices, " ")
+        println(output)
+    else
+        println("provided file ($(ARGS[1]) should only have two lines.")
+    end
 end
+
 
 """
     kmers(subject::String,kmer_size::Int64)::Tuple
