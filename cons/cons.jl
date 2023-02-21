@@ -1,14 +1,28 @@
 #! /usr/bin/env julia
-"""Making a consensus matrix
+#=Making a consensus matrix
 author --- Sibbe Bakker
-"""
+=#
+using ArgParse
+#TODO make a data type for a profile matrix. Try to implement get concensus
+# string as a method.
 
 function main()
+    s = ArgParseSettings("Construct a consensus string from a fasta file "*
+                         "of DNA sequences.")
     try
-        input = take_file_input()
+        @add_arg_table s begin
+            "fasta"
+            required = true
+        end
+        parsed_args = parse_args(s)
+        input = take_file_input(parsed_args["fasta"])
         data = parse_fasta(input)
-        profile =  profile_matrix(data)
-        println(typeof(profile))
+        profile =  calculate_profile_matrix(data)
+        consensus = get_consensus(profile)
+        
+        # Formatting output
+        println(consensus)
+        print_profile(profile)
     catch
         throw("Input file could not be analysed.")
     end
@@ -19,23 +33,16 @@ end
 # Functions -----------------------------------------------------------------
 
 """
-    take_file_input()
+    take_file_input(file :: String)
 
 Take in a file name from the command line, and read it into a io file.
 """
-function take_file_input()
-     if length(ARGS) != 1
-        println("usage: $PROGRAM_FILE  <fasta> \n"*
-                "fasta \t File path to a fasta file." )
-        exit(1)
-    end
-
-    arg  = join(ARGS)
-    if isfile(arg)
-        input = open(arg, "r")
+function take_file_input(file :: String)
+    if isfile(file)
+        input = open(file, "r")
         return input
     else
-        throw("provided $arg is not a valid file.") 
+        throw("provided $file is not a valid file.") 
     end
 end
 
@@ -144,29 +151,50 @@ function enumerate_characters(string::String)
 end
 
 """
+    Profile_matrix
+
+A data type to represent a profile matrix.
+
+# Fields
+
+- `matrix` : The profile matrix.
+- `bases` : The letters associated with each index of the profile matrix.
+"""
+struct Profile_matrix
+    matrix :: Matrix{Float64}
+    bases :: Vector{Char}
+end
+
+"""
     profile_matrix(sequences::Vector{Dna})::Matrix
 
-Construct a profile matrix from a vector of Dna sequences.
+Construct a profile matrix from a vector of Dna sequences. This function makes
+a profile by first iterating over the characters of all sequences and then
+turning to a new sequence.
+
+This function can be generalised to protein sequences.
 
 ...
 # Arguments
 - `sequences::Vector{Dna}::Matrix`: 
-...
 
 # Depends
 
-- `check_equal_sequence_length()`
+- `check_equal_sequence_length()` : To check whether all sequences are of
+similar length.
+- `enumerate_characters()` : To determine the set of unique letters.
 
 # Example
 ```julia
+julia> fastas = fastas = parse_fasta(fasta_file_object)
+julia> profile_matrix(fastas)
+Profile_matrix([5.0 1.0 0.0 0.0 5.0 5.0 0.0 0.0; 1.0 1.0 6.0 3.0 0.0 1.0 0.0 0.0; 1.0 5.0 0.0 0 .0 0.0 1.0 1.0 6.0; 0.0 0.0 1.0 4.0 2.0 0.0 6.0 1.0], ['A', 'G', 'T', 'C']) 
 ```
 """
-function profile_matrix(Dna_sequences :: Vector{Dna}) :: Tuple{Vector{Char}, 
-                                                               Matrix{Float64}}
+function calculate_profile_matrix(Dna_sequences :: Vector{Dna})::Profile_matrix
     check_equal_sequence_length(Dna_sequences) 
     sequences = map(x -> x.sequence, Dna_sequences)
     sequenceₗ = length(sequences[1])
-    row_names= [] 
     
     # Letters are the row names.
     letters = collect(keys(enumerate_characters(join(sequences))))
@@ -177,16 +205,76 @@ function profile_matrix(Dna_sequences :: Vector{Dna}) :: Tuple{Vector{Char},
         for sequence_index = 1:length(sequences)
             for index_character = 1:length(letters)
                 current_char = sequences[sequence_index][index]
-                println(current_char, string(letters[index_character]))
                 if string(current_char) == string(letters[index_character])
                     profile[index_character, index] += 1
-                    println("seq $sequence_index char $index  $current_char")
                 end
             end
         end
 
     end
-    return (letters, profile)
+    profile_matrix = Profile_matrix(profile, letters)
+    return profile_matrix
+end
+
+"""
+    max_rows_indeces(matrix::Matrix)::Array{Int}
+
+Determine the index of the max value in each row in a column wise order.
+
+...
+# Arguments
+- `matrix::Matrix::Array{Int}`: Matrix to be analysed
+
+"""
+function max_rows_indeces(matrix :: Matrix) :: Array{Int}
+    max_row_list = []
+    rows, cols = size(matrix)
+    # Current max
+    for c =  1:cols
+        max_col = maximum(matrix[1:end, c])
+        for r = 1:rows
+            value = matrix[r, c] 
+            if value == max_col
+                # The current index is max
+                push!(max_row_list, r)
+            end
+        end
+    end
+    return max_row_list
+end
+
+"""
+    get_consensus(matrix,headers)::String
+
+Convert a profile matrix into a consensus string.
+
+...
+# Arguments
+- `profile_matrix` : A `Profile_matrix` object.
+...
+
+# Example
+```julia
+```
+"""
+function get_consensus(profile_matrix :: Profile_matrix) :: String
+    matrix = profile_matrix.matrix
+    bases = profile_matrix.bases
+
+    indeces = max_rows_indeces(matrix)
+    consensus = String(map(x -> bases[x], indeces))
+    return consensus
+end
+
+function print_profile(profile_matrix :: Profile_matrix)
+    rows, _ = size(profile_matrix.matrix)
+    for r = 1:rows
+        println("$(profile_matrix.bases[r]): "*
+                "$(join(map(x -> floor(Int64, x),
+                            profile_matrix.matrix[r, 1:end]), 
+                              " "))")
+    end
+    
 end
 
 # utilities
@@ -199,9 +287,6 @@ function validate_dna(string::String)
     accepted_chars = map(x -> issubset(x, accepted_letters), collect(string))
     return all(accepted_chars)
 end
-
-
-
 
 
 # Execute --------------------------------------------------------------------
