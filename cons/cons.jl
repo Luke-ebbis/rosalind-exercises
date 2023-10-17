@@ -197,7 +197,7 @@ function calculate_profile_matrix(Dna_sequences :: Vector{Dna})::Profile_matrix
     sequenceₗ = length(sequences[1])
     
     # Letters are the row names.
-    letters = collect(keys(enumerate_characters(join(sequences))))
+    letters = sort(collect(keys(enumerate_characters(join(sequences)))))
     # Pre-allocate all the values of the array.
     profile = zeros(length(letters), sequenceₗ)
     
