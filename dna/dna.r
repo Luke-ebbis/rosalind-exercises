@@ -1,5 +1,3 @@
 #! /usr/bin/env Rscript
-
-library(package = "tidyverse")
-ggplot()
-tibble()
+dist = rnorm(100);
+hist(dist);
