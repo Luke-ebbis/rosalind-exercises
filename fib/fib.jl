@@ -19,7 +19,7 @@ Compute the amount of rabbits after `n` generations with a breeding rate of
 
 # Example
 ```julia-repl
-julia> recursive_rabbits_population(n=20,k=2)
+julia> recursive_rabbits_population(n=20, k=2)
 349525
 ```
 """

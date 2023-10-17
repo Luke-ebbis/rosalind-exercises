@@ -41,7 +41,6 @@ end
 
 Parse a fasta file, return a list of Dna data types.
 
-...
 # Arguments
 - `inputObject::IOStream`: An open fasta file object. As created with the
 `open()` function.
