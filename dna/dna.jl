@@ -12,15 +12,43 @@ dependencies --- Argparse
 function main()
     parsed_args = parse_commandline()
     println("Parsed args:")
-    for (arg,val) in parsed_args
-        println("  $arg  =>  $val")
+    for arg in parsed_args
+        println("  $arg  ")
     end
 end
 
+function parse_commandline()
+    if length(ARGS) != 1
+        throw(DomainError(ARGS, "You may only use one argument to this script."))
+    else
+        return pop!(ARGS)
+    end
+end
+
+#==A datatype for DNA
+
+:param sequence: String: The sequence of the DNA. Lowercase letters are
+automatically converted to uppercase letters.
+:param: identifier: String: identifier of the DNA.
+:param:  comment: The comment of the DNA string.
+
+depends --- validate_dna()
+==#
+struct Dna
+    sequence::AbstractString
+    identifier::AbstractString
+    comment::AbstractString
+    # Checking Wether the DNA is valid.
+    Dna(sequence::String, identifier::String, comment::String) =
+    validate_dna(uppercase(sequence)) ? 
+        new(uppercase(sequence), identifier, comment) :
+        throw(ArgumentError("Sequence of $identifier is invalid."))
+end
+
+
 if abspath(PROGRAM_FILE) == @__FILE__
-    
-
     main()
-
-
+    dna_string = read!(AbstractString(parse_commandline()))
+    dna = Dna(dna_string, "", "")
+    println("Data is $dna")
 end

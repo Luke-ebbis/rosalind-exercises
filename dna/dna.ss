@@ -1,9 +1,14 @@
 #!/usr/bin/env scheme-script
-(import (rnrs))
-
+(import (rnrs)
+        (rnrs hashtables (6))         ; for R6RS hash tables
+        (rnrs base (6)))              ; for R6RS let-values
 ;; reading in command line arguments.
 
-(define arguments (command-line))
+;; (define arguments (command-line))
+
+;; Non interactive mode chars.
+(define arguments (list "script" "/home/sibbe/Documents/private/projects/programming-projects/rosalind-exercises/dna/dna_test.txt"))
+
 
 (define (file->list-of-chars file)
   (with-input-from-file file
@@ -13,8 +18,21 @@
           (if (eof-object? char)
               (reverse chars)
               (reading (cons char chars))))))))
+
+(define (hashtable->alist ht)
+  (let-values (((ks vs) (hashtable-entries ht)))
+    (vector->list (vector-map cons ks vs))))
+
+;; reading in the data
 (define data (
   file->list-of-chars (list-ref arguments 1)))
+
+
 (display data)
+
+
+
+
+
 
 (newline)
