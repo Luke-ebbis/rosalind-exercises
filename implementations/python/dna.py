@@ -19,28 +19,18 @@ Useage          The script is used as follows:
 
 import sys, os
 
+DNA_letters = {'a', "t", "c", 'g'}
 arguments = sys.argv[1:]
 
 
 def take_input() -> str:
     input = ''
-    if '-filter' in arguments:
-        # Take from STDIN; ignore files that are given.
-        input = sys.stdin.read()
-        assert not os.path.exists(arguments[0]), \
-            f"The input file {arguments[0]!r} cannot be used as it exists."
+    if "--input-file" in arguments:
+        with open(arguments[1], "r") as f:
+            return "".join([x.strip("\n").lower() for x in f.readlines()])
     else:
-        infile=arguments[0]
-        assert os.path.exists(infile), \
-            FileExistsError(f"The supplied file {infile!r} does not exist.")
-        with open(infile) as f:
-            input = f.read()
-    assert input != '', ValueError("DNA sequence could not be read in/")
+        raise Exception("Error with handling the file")
 
-    #sanitising input
-    input_out = input.strip().lower()
-
-    return input_out
 
 def count_letters(instr: str) -> dict:
     '''
@@ -54,8 +44,9 @@ def count_letters(instr: str) -> dict:
     '''
 
     # make a dictionary of the letters in the string:
-    stats = {L:instr.count(L) for L in instr}
-    return stats
+    stats = {L: instr.count(L) if L in instr else 0  for L in instr}
+    missing_set = {L:0 for L in DNA_letters if L not in stats.keys()}
+    return stats | missing_set
 
 
 def give_out(output) -> None:
@@ -67,8 +58,7 @@ def give_out(output) -> None:
     STOUT = False # a flag to indicate whether there is output written to STDout
 
     letters = {k for k in output.keys()}
-    DNA_letters = {'a', "t", "c", 'g'}
-    assert len(letters ^ DNA_letters) == 0,\
+    assert len((letters ^ DNA_letters)-DNA_letters) == 0,\
         f"The input sequence contains nonstandard letters {DNA_letters^letters}"
 
     A = str(output['a'])
@@ -78,18 +68,8 @@ def give_out(output) -> None:
 
 
     outstr = f"{' '.join([A,C,G,T])}\n"
-    if '-filter' in arguments and len(arguments) == 2:
-        fileout = arguments[0]
-    elif '-filter' in arguments and len(arguments) == 1:
-        sys.stdout.write(outstr)
-        STOUT = True
-    else:
-        fileout = arguments[1]
-    assert os.path.exists(fileout) == False, \
-        f"The output file {arguments[0]!r} cannot be used as it exists."
-    if STOUT == False:
-        with open(fileout, 'w') as out:
-            out.write(outstr)
+    print(outstr)
+
 def main():
     instr = take_input()
     stats = count_letters(instr)

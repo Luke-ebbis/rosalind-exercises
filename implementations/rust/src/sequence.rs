@@ -22,7 +22,7 @@ impl<T: Sequence> Frequency for T {
     /// # Determine the frequency of a sequence.
     ///
     /// # Returns
-    /// The length of the sequence.
+    /// The frequency of the sequence. If a letter that is in the alphabet does not exist in the sequence, a 0 is given.
     fn frequency(&self) -> HashMap<char, i32> {
         let seq = self.get();
         let mut letter_counts: HashMap<char, i32> = HashMap::new();
