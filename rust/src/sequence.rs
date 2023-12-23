@@ -2,6 +2,8 @@ use std::collections::HashSet;
 use std::fmt::{Debug, Display};
 use std::str::Chars;
 use std::{error::Error, fmt};
+use std::cmp::Reverse;
+use crate::sequence::Alphabets::Dna;
 
 #[derive(Debug, PartialEq)]
 pub struct SequenceError {
@@ -81,56 +83,88 @@ impl Sequence {
 pub struct Alphabet {
     set: HashSet<char>,
     case: bool,
+    reverse: bool,
 }
 
 impl Alphabet {
+    /// - `case` : Check the case of characters.
     pub fn new(
         chars: Vec<char>,
         case: bool,
+        reverse: bool
     ) -> Alphabet {
         let map: HashSet<char> = chars.into_iter().collect();
+        if !case {
+            todo!("case handling not yet present")
+        }
         Alphabet {
             set: map,
             case: case,
+            reverse: reverse
         }
     }
-    pub fn contains(
+    fn contains(
         self,
         lookupchar: &char,
     ) -> bool {
-        self.set.contains(lookupchar)
+        match self.reverse {
+            true => !self.set.contains(lookupchar),
+            false => self.set.contains(lookupchar),
+        }
     }
 }
 
 pub enum Alphabets {
     Dna,
+    /// The set of all characters.
+    Any,
 }
 
 impl Alphabets {
     pub fn set(self) -> Alphabet {
         match self {
-            Alphabets::Dna => Alphabet::new(vec!['a', 'c', 't', 'g'], true),
+            Alphabets::Dna => Alphabet::new(vec!['a', 'c', 't', 'g', 'A', 'T', 'G', 'C'],
+                                            true, false),
+            Alphabets::Any => Alphabet::new(vec![], true, true),
         }
     }
 }
 
+pub enum Sequences {
+    /// Any free text
+    Any(String),
+    Dna(String),
+}
+
+impl Sequences {
+    pub fn new(self) -> Result<Sequence, SequenceError>{
+        match self {
+            Sequences::Dna(s) => Sequence::new(s, Alphabets::Dna.set()),
+            Sequences::Any(s) => Sequence::new(s, Alphabets::Any.set()),
+        }
+    }
+}
 #[cfg(test)]
 mod test {
-    use crate::sequence::{Alphabet, Sequence, SequenceError};
+    use crate::sequence::{Alphabet, Sequence, SequenceError, Sequences};
     use crate::sequence::Alphabets::Dna;
 
     #[test]
-    fn sequence_error() {
-        let expected_wrong = vec!['n', 'i', 'y', 'r', 's', ' ', 'T', 'h', 'e', 'o'];
+    fn DnaError() {
+        let expected_wrong = vec!['n', 'i', 'y', 'r', 's', ' ', 'h', 'e', 'o'];
         let wrong_set = expected_wrong.into_iter().collect();
         let expected_error = SequenceError::new(wrong_set);
-        let sequence = Sequence::new(
-            "This contains any characters",
-            Dna.set(),
-        );
-        match sequence {
+        let dna = Sequences::new(Sequences::Dna("This contains any characters".to_string()));
+        match dna {
             Err(e) => assert_eq!(expected_error, e),
             _ => panic!("The error does not work!")
         }
+    }
+
+    #[test]
+    fn Any() {
+        println!("{}", "any".to_string());
+        let any = Sequences::new(Sequences::Any("This may be any text".to_string()));
+        let sequence = any.unwrap();
     }
 }
