@@ -11,7 +11,7 @@ use rust::dna::dna_count;
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// Challenge to complete.
-    #[arg(short, long)]
+    #[arg(name="challenge")]
     challenge: String,
 
     #[arg(short, long)]
