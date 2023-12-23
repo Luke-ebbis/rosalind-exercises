@@ -1,19 +1,15 @@
-use crate::dna::DnaCount;
-use crate::sequence;
-use crate::sequence::strings::Alphabets::Dna as DnaAlphabet;
 use crate::sequence::strings::SequenceError;
 use crate::sequence::strings::Sequences::Dna as DnaSequenceFactory;
 use crate::sequence::strings::Sequences::Rna as RnaSequenceFactory;
 use crate::sequence::Sequence as SequenceType;
-use clap::builder::Str;
+
 use std::collections::HashMap;
 use std::fmt;
-use std::fmt::{Display, Formatter, write};
+use std::fmt::{Display, Formatter};
 
 pub trait Sequence: fmt::Display {
     fn get(&self) -> &str;
 }
-
 
 pub trait Length {
     fn length(&self) -> i32;
@@ -53,14 +49,20 @@ pub struct Dna {
     sequence: strings::Sequence,
 }
 
-impl Display for  Dna {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+impl Display for Dna {
+    fn fmt(
+        &self,
+        f: &mut Formatter<'_>,
+    ) -> fmt::Result {
         write!(f, "{}", self.get())
     }
 }
 
-impl Display for  Rna {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+impl Display for Rna {
+    fn fmt(
+        &self,
+        f: &mut Formatter<'_>,
+    ) -> fmt::Result {
         write!(f, "{}", self.get())
     }
 }
@@ -113,11 +115,10 @@ impl crate::sequence::Rna {
 }
 
 pub mod strings {
-    use crate::sequence::strings::Alphabets::Dna;
-    use std::cmp::Reverse;
+
     use std::collections::HashSet;
-    use std::fmt::{Debug, Display, format};
-    use std::str::Chars;
+    use std::fmt::Debug;
+
     use std::{error::Error, fmt};
 
     #[derive(Debug, PartialEq)]
@@ -127,14 +128,17 @@ pub mod strings {
     }
 
     impl SequenceError {
-        pub fn new(alphabet: Alphabet, badchars: HashSet<char>) -> SequenceError {
+        pub fn new(
+            alphabet: Alphabet,
+            badchars: HashSet<char>,
+        ) -> SequenceError {
             SequenceError {
                 description: format!("{alphabet:?}"),
                 bad_char_set: badchars,
             }
         }
 
-        fn description(badchars: HashSet<char>) -> String {
+        fn description(_badchars: HashSet<char>) -> String {
             format!("")
         }
     }
@@ -147,8 +151,7 @@ pub mod strings {
             write!(
                 f,
                 "{:?}: Invalid characters in the sequence:\n {:?}",
-                self.description,
-                self.bad_char_set
+                self.description, self.bad_char_set
             )
         }
     }
@@ -281,14 +284,14 @@ pub mod strings {
 
 #[cfg(test)]
 mod test {
-    use crate::sequence::strings::Alphabets::Dna;
-    use crate::sequence::strings::{Alphabet, Alphabets, Sequence, SequenceError, Sequences};
+
+    use crate::sequence::strings::Sequences;
 
     #[test]
     fn Any() {
         println!("{}", "any".to_string());
         let any =
             Sequences::new(Sequences::Any("This may be any text".to_string()));
-        let sequence = any.unwrap();
+        let _sequence = any.unwrap();
     }
 }

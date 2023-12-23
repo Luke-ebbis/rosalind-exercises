@@ -36,8 +36,6 @@ pub fn dna_count(string: String) -> Result<DnaCount, SequenceError> {
 #[cfg(test)]
 mod test {
     use crate::dna::dna_count;
-    use crate::sequence::{Dna, Frequency};
-    use crate::sequence::{Length, Sequence};
 
     #[test]
     fn example_data() {

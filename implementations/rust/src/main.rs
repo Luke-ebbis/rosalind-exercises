@@ -1,10 +1,10 @@
-use rust::sequence;
 use std::{fmt, fs};
 
 use crate::Challenges::Dna;
-use clap::{Error, Parser};
-use rust::dna;
-use rust::dna::{dna_count, DnaCount};
+use clap::Parser;
+
+use rust::dna::dna_count;
+use rust::rna::transcribe_rna;
 
 /// My programme for the rosalind work in `rust`.
 #[derive(Parser, Debug)]
@@ -21,10 +21,11 @@ struct Args {
 pub enum Challenges {
     /// The DNA counting challenge.
     Dna,
+    Rna,
 }
 
 impl Challenges {
-    const IMPLEMENTED: [&'static Challenges; 1] = [&crate::Challenges::Dna];
+    const IMPLEMENTED: [&'static Challenges; 2] = [&crate::Challenges::Dna, &crate::Challenges::Rna];
     fn new(
         string: &str,
         args: &Args,
@@ -36,6 +37,13 @@ impl Challenges {
                     .replace("\n", "");
                 let count = dna_count(input).unwrap();
                 println!("{count}")
+            },
+            "rna" => {
+                let input = fs::read_to_string(args.input_file.clone())
+                    .expect("Should have been able to read the file")
+                    .replace("\n", "");
+                let rna = transcribe_rna(input).unwrap();
+                println!("{rna}")
             }
             _ => unimplemented!(
                 "Supplied challenge string: `{}' is not yet implemented!\n\
@@ -52,12 +60,13 @@ impl fmt::Display for Challenges {
         f: &mut fmt::Formatter<'_>,
     ) -> fmt::Result {
         let repr = match self {
-            Dna => "Dna".to_string(),
+            Challenges::Dna => "Dna".to_string(),
+            Challenges::Rna => "Rnd".to_string(),
         };
         write!(f, "{}", repr)
     }
 }
 fn main() {
     let args = Args::parse();
-    let challenge = Challenges::new(&args.challenge, &args);
+    let _challenge = Challenges::new(&args.challenge, &args);
 }
