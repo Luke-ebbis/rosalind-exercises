@@ -4,4 +4,5 @@
 **/Cargo.lock
 *vscode
 target/.rustc_info.json
-
+implementations/rust/target/
+implementations/rust/.idea
