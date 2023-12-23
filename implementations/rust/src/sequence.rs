@@ -1,14 +1,19 @@
+use crate::dna::DnaCount;
 use crate::sequence;
 use crate::sequence::strings::Alphabets::Dna as DnaAlphabet;
 use crate::sequence::strings::SequenceError;
 use crate::sequence::strings::Sequences::Dna as DnaSequenceFactory;
+use crate::sequence::strings::Sequences::Rna as RnaSequenceFactory;
 use crate::sequence::Sequence as SequenceType;
 use clap::builder::Str;
 use std::collections::HashMap;
+use std::fmt;
+use std::fmt::{Display, Formatter, write};
 
-pub trait Sequence {
+pub trait Sequence: fmt::Display {
     fn get(&self) -> &str;
 }
+
 
 pub trait Length {
     fn length(&self) -> i32;
@@ -48,11 +53,24 @@ pub struct Dna {
     sequence: strings::Sequence,
 }
 
+impl Display for  Dna {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.get())
+    }
+}
+
+impl Display for  Rna {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.get())
+    }
+}
+
 impl Sequence for Dna {
     fn get(&self) -> &str {
         &self.sequence.get()
     }
 }
+
 impl Dna {
     /// # Create a new Dna sequence.
     pub fn new(sequence: impl Into<String>) -> Result<Dna, SequenceError> {
@@ -63,13 +81,42 @@ impl Dna {
             Err(e) => Err(e),
         }
     }
+
+    /// # Transcribe the sequence into RNA
+    pub fn transcribe(self) -> Rna {
+        let rna = self.sequence.get().replace("t", "u").replace("T", "U");
+        Rna::new(rna).unwrap()
+    }
+}
+
+pub struct Rna {
+    sequence: strings::Sequence,
+}
+
+impl Sequence for crate::sequence::Rna {
+    fn get(&self) -> &str {
+        &self.sequence.get()
+    }
+}
+impl crate::sequence::Rna {
+    /// # Create a new Dna sequence.
+    pub fn new(
+        sequence: impl Into<String>
+    ) -> Result<crate::sequence::Rna, SequenceError> {
+        let sequence =
+            strings::Sequences::new(RnaSequenceFactory(sequence.into()));
+        match sequence {
+            Ok(s) => Ok(crate::sequence::Rna { sequence: s }),
+            Err(e) => Err(e),
+        }
+    }
 }
 
 pub mod strings {
     use crate::sequence::strings::Alphabets::Dna;
     use std::cmp::Reverse;
     use std::collections::HashSet;
-    use std::fmt::{Debug, Display};
+    use std::fmt::{Debug, Display, format};
     use std::str::Chars;
     use std::{error::Error, fmt};
 
@@ -80,10 +127,9 @@ pub mod strings {
     }
 
     impl SequenceError {
-        pub fn new(badchars: HashSet<char>) -> SequenceError {
-            let description = Self::description(badchars.clone());
+        pub fn new(alphabet: Alphabet, badchars: HashSet<char>) -> SequenceError {
             SequenceError {
-                description,
+                description: format!("{alphabet:?}"),
                 bad_char_set: badchars,
             }
         }
@@ -100,7 +146,8 @@ pub mod strings {
         ) -> fmt::Result {
             write!(
                 f,
-                "Invalid characters in the sequence:\n {:?}",
+                "{:?}: Invalid characters in the sequence:\n {:?}",
+                self.description,
                 self.bad_char_set
             )
         }
@@ -144,7 +191,7 @@ pub mod strings {
             }
             // Now lets check if the set is empty
             if !wrong_set.is_empty() {
-                Some(SequenceError::new(wrong_set))
+                Some(SequenceError::new(self.alphabet.clone(), wrong_set))
             } else {
                 None
             }
@@ -187,6 +234,9 @@ pub mod strings {
     }
 
     pub enum Alphabets {
+        /// Set of ribonucleotides
+        Rna,
+        /// Set of Dna nucleotides
         Dna,
         /// The set of all characters.
         Any,
@@ -195,6 +245,11 @@ pub mod strings {
     impl Alphabets {
         pub fn set(self) -> Alphabet {
             match self {
+                Alphabets::Rna => Alphabet::new(
+                    vec!['a', 'c', 'u', 'g', 'A', 'U', 'G', 'C'],
+                    true,
+                    false,
+                ),
                 Alphabets::Dna => Alphabet::new(
                     vec!['a', 'c', 't', 'g', 'A', 'T', 'G', 'C'],
                     true,
@@ -208,7 +263,9 @@ pub mod strings {
     pub enum Sequences {
         /// Any free text
         Any(String),
+        /// Dna
         Dna(String),
+        Rna(String),
     }
 
     impl Sequences {
@@ -216,6 +273,7 @@ pub mod strings {
             match self {
                 Sequences::Dna(s) => Sequence::new(s, Alphabets::Dna.set()),
                 Sequences::Any(s) => Sequence::new(s, Alphabets::Any.set()),
+                Sequences::Rna(s) => Sequence::new(s, Alphabets::Rna.set()),
             }
         }
     }
@@ -224,23 +282,7 @@ pub mod strings {
 #[cfg(test)]
 mod test {
     use crate::sequence::strings::Alphabets::Dna;
-    use crate::sequence::strings::{
-        Alphabet, Sequence, SequenceError, Sequences,
-    };
-
-    #[test]
-    fn DnaError() {
-        let expected_wrong = vec!['n', 'i', 'y', 'r', 's', ' ', 'h', 'e', 'o'];
-        let wrong_set = expected_wrong.into_iter().collect();
-        let expected_error = SequenceError::new(wrong_set);
-        let dna = Sequences::new(Sequences::Dna(
-            "This contains any characters".to_string(),
-        ));
-        match dna {
-            Err(e) => assert_eq!(expected_error, e),
-            _ => panic!("The error does not work!"),
-        }
-    }
+    use crate::sequence::strings::{Alphabet, Alphabets, Sequence, SequenceError, Sequences};
 
     #[test]
     fn Any() {

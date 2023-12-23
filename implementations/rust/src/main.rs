@@ -11,7 +11,7 @@ use rust::dna::{dna_count, DnaCount};
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// Challenge to complete.
-    #[arg(name="challenge")]
+    #[arg(name = "challenge")]
     challenge: String,
 
     #[arg(short, long)]
@@ -24,7 +24,7 @@ pub enum Challenges {
 }
 
 impl Challenges {
-    const IMPLEMENTED:  [&'static Challenges; 1] = [&crate::Challenges::Dna];
+    const IMPLEMENTED: [&'static Challenges; 1] = [&crate::Challenges::Dna];
     fn new(
         string: &str,
         args: &Args,
@@ -37,12 +37,15 @@ impl Challenges {
                 let count = dna_count(input).unwrap();
                 println!("{count}")
             }
-            _ => unimplemented!("Supplied challenge string: `{}' is not yet implemented!\n\
-            the challenges {:?} can be chosen.", string, Challenges::IMPLEMENTED),
+            _ => unimplemented!(
+                "Supplied challenge string: `{}' is not yet implemented!\n\
+            the challenges {:?} can be chosen.",
+                string,
+                Challenges::IMPLEMENTED
+            ),
         }
     }
 }
-
 impl fmt::Display for Challenges {
     fn fmt(
         &self,
