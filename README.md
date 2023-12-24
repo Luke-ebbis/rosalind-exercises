@@ -35,10 +35,11 @@ argument.
 
 ## Completed assignments
 
-| Task / Language | rust               | R    | python             | julia | common lisp        |
-| --------------- | ------------------ | ---- | ------------------ | ----- | ------------------ |
-| dna             | :white_check_mark: | :x:  | :white_check_mark: | :x:   | :white_check_mark: |
-| rna             | :white_check_mark: |      |                    |       |                    |
+| Task / Language                              | rust               | R    | python             | julia              | common lisp        |
+| -------------------------------------------- | ------------------ | ---- | ------------------ | ------------------ | ------------------ |
+| [dna](https://rosalind.info/problems/dna/)   | :white_check_mark: | :x:  | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| [rna](https://rosalind.info/problems/rna/)   | :white_check_mark: |      |                    |                    |                    |
+| [revp](https://rosalind.info/problems/revc/) | :white_check_mark: |      |                    |                    |                    |
 
 
 
