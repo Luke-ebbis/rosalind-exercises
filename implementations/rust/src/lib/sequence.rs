@@ -1,11 +1,11 @@
+use crate::lib::sequence::strings::Sequences::Any as TextSequenceFactory;
+use crate::lib::sequence::strings::Sequences::Dna as DnaSequenceFactory;
+use crate::lib::sequence::strings::Sequences::Rna as RnaSequenceFactory;
+use crate::lib::sequence::strings::{Alphabet, Alphabets, SequenceError};
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::ops::Add;
-use crate::lib::sequence::strings::{Alphabet, Alphabets, SequenceError};
-use crate::lib::sequence::strings::Sequences::Dna as DnaSequenceFactory;
-use crate::lib::sequence::strings::Sequences::Rna as RnaSequenceFactory;
-use crate::lib::sequence::strings::Sequences::Any as TextSequenceFactory;
 /// https://stackoverflow.com/a/61467564/15753558 to duplicate repeat implementations.
 
 /// # Facilities to deal with sequences on a fundamental level.
@@ -17,13 +17,14 @@ pub trait Sequence: fmt::Display {
     fn getAlphabet(&self) -> Alphabet;
 
     /// Making a new sequence of the same type using a
-    fn new(string: impl Into<String>) -> Result<Self, SequenceError> where Self: Sized;
+    fn new(string: impl Into<String>) -> Result<Self, SequenceError>
+    where
+        Self: Sized;
 }
 
 pub trait Length {
     fn length(&self) -> i32;
 }
-
 
 pub trait Reverse {
     fn reverse(self) -> Self;
@@ -125,7 +126,10 @@ impl Dna {
         let sequence =
             strings::Sequences::new(DnaSequenceFactory(sequence.into()));
         match sequence {
-            Ok(s) => Ok(Dna { sequence: s, alphabet: Alphabets::Dna.set() }),
+            Ok(s) => Ok(Dna {
+                sequence: s,
+                alphabet: Alphabets::Dna.set(),
+            }),
             Err(e) => Err(e),
         }
     }
@@ -142,7 +146,6 @@ pub struct Rna {
     alphabet: Alphabet,
 }
 
-
 /// A Sequence build using [strings::Alphabets::Rna].
 impl Sequence for Rna {
     fn get(&self) -> &str {
@@ -157,13 +160,14 @@ impl Sequence for Rna {
 }
 impl Rna {
     /// # Create a new Dna sequence.
-    pub fn new(
-        sequence: impl Into<String>
-    ) -> Result<Rna, SequenceError> {
+    pub fn new(sequence: impl Into<String>) -> Result<Rna, SequenceError> {
         let sequence =
             strings::Sequences::new(RnaSequenceFactory(sequence.into()));
         match sequence {
-            Ok(s) => Ok(Rna { sequence: s, alphabet: Alphabets::Rna.set() }),
+            Ok(s) => Ok(Rna {
+                sequence: s,
+                alphabet: Alphabets::Rna.set(),
+            }),
             Err(e) => Err(e),
         }
     }
@@ -188,7 +192,9 @@ impl Complement for Dna {
                 'c' => 'g',
                 'G' => 'C',
                 'g' => 'c',
-                _ => {panic!()}
+                _ => {
+                    panic!()
+                }
             };
             replace.push(complement);
         }
@@ -215,19 +221,18 @@ impl Sequence for Text {
 }
 impl Text {
     /// # Create a new Dna sequence.
-    pub fn new(
-        sequence: impl Into<String>
-    ) -> Result<Text, SequenceError> {
+    pub fn new(sequence: impl Into<String>) -> Result<Text, SequenceError> {
         let sequence =
             strings::Sequences::new(TextSequenceFactory(sequence.into()));
         match sequence {
-            Ok(s) => Ok(Text { sequence: s, alphabet: Alphabets::Any.set() }),
+            Ok(s) => Ok(Text {
+                sequence: s,
+                alphabet: Alphabets::Any.set(),
+            }),
             Err(e) => Err(e),
         }
     }
 }
-
-
 
 pub mod strings {
 
@@ -423,6 +428,5 @@ mod test {
 
         let reversed = any.reverse();
         print!("{reversed}");
-
     }
 }

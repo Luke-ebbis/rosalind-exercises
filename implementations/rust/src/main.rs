@@ -1,7 +1,7 @@
 //! My work on rosalind in `rust`.
 
-use std::{fmt, fs};
 use clap::Parser;
+use std::{fmt, fs};
 mod challenges;
 mod lib;
 
@@ -29,7 +29,11 @@ pub enum Challenges {
 }
 
 impl Challenges {
-    const IMPLEMENTED: [&'static Challenges; 3] = [&crate::Challenges::Dna, &crate::Challenges::Rna, &crate::Challenges::Revc];
+    const IMPLEMENTED: [&'static Challenges; 3] = [
+        &crate::Challenges::Dna,
+        &crate::Challenges::Rna,
+        &crate::Challenges::Revc,
+    ];
     fn new(
         string: &str,
         args: &Args,
@@ -41,7 +45,7 @@ impl Challenges {
                     .replace("\n", "");
                 let count = challenges::dna::dna_count(input).unwrap();
                 println!("{count}")
-            },
+            }
             "rna" => {
                 let input = fs::read_to_string(args.input_file.clone())
                     .expect("Should have been able to read the file")
@@ -53,7 +57,8 @@ impl Challenges {
                 let input = fs::read_to_string(args.input_file.clone())
                     .expect("Should have been able to read the file")
                     .replace("\n", "");
-                let rna = challenges::revc::dna_reverse_complement(input).unwrap();
+                let rna =
+                    challenges::revc::dna_reverse_complement(input).unwrap();
                 println!("{rna}")
             }
             _ => unimplemented!(
@@ -74,7 +79,7 @@ impl fmt::Display for Challenges {
         let repr = match self {
             Challenges::Dna => "dna".to_string(),
             Challenges::Rna => "rna".to_string(),
-            Challenges::Revc=> "revc".to_string(),
+            Challenges::Revc => "revc".to_string(),
         };
         write!(f, "{}", repr)
     }

@@ -1,8 +1,8 @@
 //! # Solution to `dna`.
-use std::fmt;
 use crate::lib::sequence::strings::SequenceError;
 use crate::lib::sequence::Dna;
 use crate::lib::sequence::Frequency;
+use std::fmt;
 
 /// # Simple DNA count Statistics.
 /// A simple struct to store amounts of `a`, `t`, `c` and `g`.
@@ -48,8 +48,8 @@ pub fn dna_count(string: String) -> Result<DnaCount, SequenceError> {
 
 #[cfg(test)]
 mod test {
-    use crate::Challenges::Dna;
     use crate::challenges::dna::*;
+    use crate::Challenges::Dna;
 
     #[test]
     fn example_data() {
