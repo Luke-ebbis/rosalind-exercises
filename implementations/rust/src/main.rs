@@ -14,7 +14,7 @@ struct Args {
     #[arg(name = "challenge")]
     challenge: String,
 
-    #[arg(short, long)]
+    #[arg(name = "input data")]
     input_file: String,
 }
 #[derive(Debug)]
