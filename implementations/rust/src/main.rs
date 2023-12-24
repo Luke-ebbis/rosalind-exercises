@@ -24,10 +24,12 @@ pub enum Challenges {
     Dna,
     /// The RNA counting challenge using [challenges::rna].
     Rna,
+    /// Reverse complement Dna [challenges::revc].
+    Revc,
 }
 
 impl Challenges {
-    const IMPLEMENTED: [&'static Challenges; 2] = [&crate::Challenges::Dna, &crate::Challenges::Rna];
+    const IMPLEMENTED: [&'static Challenges; 3] = [&crate::Challenges::Dna, &crate::Challenges::Rna, &crate::Challenges::Revc];
     fn new(
         string: &str,
         args: &Args,
@@ -47,6 +49,13 @@ impl Challenges {
                 let rna = challenges::rna::transcribe_rna(input).unwrap();
                 println!("{rna}")
             }
+            "revc" => {
+                let input = fs::read_to_string(args.input_file.clone())
+                    .expect("Should have been able to read the file")
+                    .replace("\n", "");
+                let rna = challenges::revc::dna_reverse_complement(input).unwrap();
+                println!("{rna}")
+            }
             _ => unimplemented!(
                 "Supplied challenge string: `{}' is not yet implemented!\n\
             the challenges {:?} can be chosen.",
@@ -63,8 +72,9 @@ impl fmt::Display for Challenges {
         f: &mut fmt::Formatter<'_>,
     ) -> fmt::Result {
         let repr = match self {
-            Challenges::Dna => "Dna".to_string(),
-            Challenges::Rna => "Rnd".to_string(),
+            Challenges::Dna => "dna".to_string(),
+            Challenges::Rna => "rna".to_string(),
+            Challenges::Revc=> "revc".to_string(),
         };
         write!(f, "{}", repr)
     }

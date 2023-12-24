@@ -1,16 +1,41 @@
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use crate::lib::sequence::strings::SequenceError;
+use std::ops::Add;
+use crate::lib::sequence::strings::{Alphabet, Alphabets, SequenceError};
 use crate::lib::sequence::strings::Sequences::Dna as DnaSequenceFactory;
 use crate::lib::sequence::strings::Sequences::Rna as RnaSequenceFactory;
+use crate::lib::sequence::strings::Sequences::Any as TextSequenceFactory;
+/// https://stackoverflow.com/a/61467564/15753558 to duplicate repeat implementations.
 
+/// # Facilities to deal with sequences on a fundamental level.
 pub trait Sequence: fmt::Display {
+    /// Get the string of the sequence.
     fn get(&self) -> &str;
+
+    /// Get the [Alphabet] of the sequence.
+    fn getAlphabet(&self) -> Alphabet;
+
+    /// Making a new sequence of the same type using a
+    fn new(string: impl Into<String>) -> Result<Self, SequenceError> where Self: Sized;
 }
 
 pub trait Length {
     fn length(&self) -> i32;
+}
+
+
+pub trait Reverse {
+    fn reverse(self) -> Self;
+}
+
+impl<T: Sequence> Reverse for T {
+    /// # Reverse the sequence by creating a new sequence that is reversed.
+    fn reverse(self) -> Self {
+        let value = self.get();
+        let reversed: String = value.chars().rev().collect();
+        T::new(reversed).unwrap()
+    }
 }
 
 pub trait Frequency {
@@ -26,8 +51,11 @@ impl<T: Sequence> Frequency for T {
     fn frequency(&self) -> HashMap<char, i32> {
         let seq = self.get();
         let mut letter_counts: HashMap<char, i32> = HashMap::new();
-        let char_vec: Vec<char> = seq.chars().collect();
-        for c in char_vec {
+        let set = self.getAlphabet().set();
+        for c in set {
+            let _ = *letter_counts.entry(c).or_insert(0);
+        }
+        for c in seq.chars() {
             *letter_counts.entry(c).or_insert(0) += 1;
         }
         letter_counts
@@ -45,8 +73,10 @@ impl<T: Sequence> Length for T {
     }
 }
 
+/// A Sequence build using [strings::Alphabets::Dna].
 pub struct Dna {
     sequence: strings::Sequence,
+    alphabet: Alphabet,
 }
 
 impl Display for Dna {
@@ -58,6 +88,14 @@ impl Display for Dna {
     }
 }
 
+impl Display for Text {
+    fn fmt(
+        &self,
+        f: &mut Formatter<'_>,
+    ) -> fmt::Result {
+        write!(f, "{}", self.get())
+    }
+}
 impl Display for Rna {
     fn fmt(
         &self,
@@ -71,6 +109,14 @@ impl Sequence for Dna {
     fn get(&self) -> &str {
         &self.sequence.get()
     }
+
+    fn getAlphabet(&self) -> Alphabet {
+        self.alphabet.clone()
+    }
+
+    fn new(sequence: impl Into<String>) -> Result<Self, SequenceError> {
+        Dna::new(sequence)
+    }
 }
 
 impl Dna {
@@ -79,7 +125,7 @@ impl Dna {
         let sequence =
             strings::Sequences::new(DnaSequenceFactory(sequence.into()));
         match sequence {
-            Ok(s) => Ok(Dna { sequence: s }),
+            Ok(s) => Ok(Dna { sequence: s, alphabet: Alphabets::Dna.set() }),
             Err(e) => Err(e),
         }
     }
@@ -93,11 +139,20 @@ impl Dna {
 
 pub struct Rna {
     sequence: strings::Sequence,
+    alphabet: Alphabet,
 }
 
+
+/// A Sequence build using [strings::Alphabets::Rna].
 impl Sequence for Rna {
     fn get(&self) -> &str {
         &self.sequence.get()
+    }
+    fn getAlphabet(&self) -> Alphabet {
+        self.alphabet.clone()
+    }
+    fn new(sequence: impl Into<String>) -> Result<Self, SequenceError> {
+        Rna::new(sequence)
     }
 }
 impl Rna {
@@ -108,11 +163,71 @@ impl Rna {
         let sequence =
             strings::Sequences::new(RnaSequenceFactory(sequence.into()));
         match sequence {
-            Ok(s) => Ok(Rna { sequence: s }),
+            Ok(s) => Ok(Rna { sequence: s, alphabet: Alphabets::Rna.set() }),
             Err(e) => Err(e),
         }
     }
 }
+
+pub trait Complement {
+    fn complement(self) -> Self;
+}
+
+impl Complement for Dna {
+    /// Complement of an Dna sequence.
+    fn complement(self) -> Self {
+        let seq: &str = self.get();
+        let mut replace: Vec<char> = Vec::new();
+        for seq_char in seq.chars().into_iter() {
+            let complement = match seq_char {
+                'a' => 't',
+                'A' => 'T',
+                't' => 'a',
+                'T' => 'A',
+                'C' => 'G',
+                'c' => 'g',
+                'G' => 'C',
+                'g' => 'c',
+                _ => {panic!()}
+            };
+            replace.push(complement);
+        }
+        let outstring: String = replace.iter().collect();
+        Self::new(outstring).unwrap()
+    }
+}
+/// A Sequence build using [strings::Alphabets::Any].
+pub struct Text {
+    sequence: strings::Sequence,
+    alphabet: Alphabet,
+}
+
+impl Sequence for Text {
+    fn get(&self) -> &str {
+        &self.sequence.get()
+    }
+    fn getAlphabet(&self) -> Alphabet {
+        self.alphabet.clone()
+    }
+    fn new(sequence: impl Into<String>) -> Result<Self, SequenceError> {
+        Text::new(sequence)
+    }
+}
+impl Text {
+    /// # Create a new Dna sequence.
+    pub fn new(
+        sequence: impl Into<String>
+    ) -> Result<Text, SequenceError> {
+        let sequence =
+            strings::Sequences::new(TextSequenceFactory(sequence.into()));
+        match sequence {
+            Ok(s) => Ok(Text { sequence: s, alphabet: Alphabets::Any.set() }),
+            Err(e) => Err(e),
+        }
+    }
+}
+
+
 
 pub mod strings {
 
@@ -234,6 +349,11 @@ pub mod strings {
                 false => self.set.contains(lookupchar),
             }
         }
+
+        /// Getter for the set variable
+        pub fn set(self) -> HashSet<char> {
+            self.set
+        }
     }
 
     pub enum Alphabets {
@@ -285,6 +405,7 @@ pub mod strings {
 #[cfg(test)]
 mod test {
     use crate::lib::sequence::strings::Sequences;
+    use crate::lib::sequence::{Length, Reverse, Text};
 
     #[test]
     fn Any() {
@@ -292,5 +413,16 @@ mod test {
         let any =
             Sequences::new(Sequences::Any("This may be any text".to_string()));
         let _sequence = any.unwrap();
+    }
+
+    #[test]
+    fn sequence_traits() {
+        let any = Text::new("0123456789").unwrap();
+        let len = any.length();
+        assert_eq!(10, len);
+
+        let reversed = any.reverse();
+        print!("{reversed}");
+
     }
 }

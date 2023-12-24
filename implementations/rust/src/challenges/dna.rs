@@ -1,4 +1,4 @@
-//! # Solution to `rna`.
+//! # Solution to `dna`.
 use std::fmt;
 use crate::lib::sequence::strings::SequenceError;
 use crate::lib::sequence::Dna;
@@ -6,6 +6,7 @@ use crate::lib::sequence::Frequency;
 
 /// # Simple DNA count Statistics.
 /// A simple struct to store amounts of `a`, `t`, `c` and `g`.
+#[derive(Debug, Clone)]
 pub struct DnaCount {
     pub a: i32,
     pub t: i32,
@@ -47,6 +48,7 @@ pub fn dna_count(string: String) -> Result<DnaCount, SequenceError> {
 
 #[cfg(test)]
 mod test {
+    use crate::Challenges::Dna;
     use crate::challenges::dna::*;
 
     #[test]
@@ -61,7 +63,7 @@ mod test {
     #[test]
     fn zero_count() {
         let input = "AAATT".to_string();
-        let expected = "20 12 17 21".to_string();
+        let expected = "3 0 0 2".to_string();
         let dna_count = dna_count(input).unwrap();
         let result = format!("{dna_count}");
         assert_eq!(expected, result);
