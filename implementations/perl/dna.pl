@@ -41,7 +41,12 @@ sub count_letters {
     my @letters = split(//, $string);
 
     # Now the letters are put into a hash with the sums per key
-    my %letter_count;
+    my %letter_count = (
+        A => 0,
+        T => 0,
+        C => 0,
+        G => 0,
+    );
 
     ++$letter_count{$_} for @letters;
     return %letter_count
@@ -84,5 +89,6 @@ chomp $inputArgs;
 if ($inputArgs eq "") {
     print $use_msg;
 } else {
-  print STDOUT join(" ", dna_count($inputArgs)), "\n";
+    print STDOUT join(" ", dna_count($inputArgs)), "\n";
 }
+
