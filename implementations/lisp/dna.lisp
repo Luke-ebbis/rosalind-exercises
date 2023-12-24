@@ -44,6 +44,6 @@
 (defvar input-data 
 (remove nil	(remove-element '#\Newline (break-to-list (parse-file-as-string 
 																							file-to-read)) () )) )
-(print (count-in-list input-data))
+(format t "~{~a~^ ~}"  (count-in-list input-data))
 
 
