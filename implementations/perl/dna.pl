@@ -72,15 +72,19 @@ sub dna_count {
 }
 
 # Message for explaining shell usage.
-# my $use_msg = "usage: $0 <input_file> 
-# Obtaining the number of bases in a DNA sequence.
+my $use_msg = "usage: $0 <input_file> 
+Obtaining the number of bases in a DNA sequence.
 
-# <input_file> \t A file holding a DNA sequence. If the given text file does 
-# \t not contain a standard DNA sequence, an error message is given.
+<input_file> \t A file holding a DNA sequence. If the given text file does 
+\t not contain a standard DNA sequence, an error message is given.
 
-# standard out: The amount of A, C, G, T bases in the input_file.";
-# die "$use_msg" unless <>;
-my $input = <>;
-chomp $input;
-print STDOUT join(" ", dna_count($input)), "\n";
+ standard out: The amount of A, C, G, T bases in the input_file.";
+# die "$use_msg" unless <> else my $input = <>;
+unless(my $input  = <>) {
+    print $use_msg;
+} else {
+    chomp $input;
+    print STDOUT join(" ", dna_count($input)), "\n";
+}
 
+# my $input = <>;
