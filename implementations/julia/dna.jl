@@ -9,46 +9,42 @@ limitation --- The input string may only contain the set of 4 standard DNA
 last version --- 2023-01-19
 dependencies --- Argparse
 =#
+
+#= Open the file into a string
+=#
+function open_dna_line(path::String)::String
+    bytes = open(path, "r") do f
+        bytes = read(f)
+        return bytes
+    end
+    outst = String(bytes)
+end
+
+function dna_frequency(str::String)
+    freq::Dict{Char, Number} = Dict(
+                                    'A' => 0,
+                                    'G' => 0,
+                                    'C' => 0,
+                                    'T' => 0,
+                                   )
+    # For each char in ...
+    for char in collect.(str)
+        freq[char] += 1
+    end
+    freq
+end
+
+function format_output(freq::Dict{Char, Number})::String
+    "$(freq['A']) $(freq['C']) $(freq['G']) $(freq['T'])"
+end
+
 function main()
-    parsed_args = parse_commandline()
-    println("Parsed args:")
-    for arg in parsed_args
-        println("  $arg  ")
-    end
+    filename::String = ARGS[1]
+    input = open_dna_line(filename)
+    cleaned = replace(input, "\n" => "")
+    dna_frequency(cleaned) |> format_output |> print
 end
-
-function parse_commandline()
-    if length(ARGS) != 1
-        throw(DomainError(ARGS, "You may only use one argument to this script."))
-    else
-        return pop!(ARGS)
-    end
-end
-
-#==A datatype for DNA
-
-:param sequence: String: The sequence of the DNA. Lowercase letters are
-automatically converted to uppercase letters.
-:param: identifier: String: identifier of the DNA.
-:param:  comment: The comment of the DNA string.
-
-depends --- validate_dna()
-==#
-struct Dna
-    sequence::AbstractString
-    identifier::AbstractString
-    comment::AbstractString
-    # Checking Wether the DNA is valid.
-    Dna(sequence::String, identifier::String, comment::String) =
-    validate_dna(uppercase(sequence)) ? 
-        new(uppercase(sequence), identifier, comment) :
-        throw(ArgumentError("Sequence of $identifier is invalid."))
-end
-
 
 if abspath(PROGRAM_FILE) == @__FILE__
     main()
-    dna_string = read!(AbstractString(parse_commandline()))
-    dna = Dna(dna_string, "", "")
-    println("Data is $dna")
 end
