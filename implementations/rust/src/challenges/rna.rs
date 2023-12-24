@@ -1,3 +1,5 @@
+//! # Solution to `rna`.
+
 use crate::lib::sequence::strings::SequenceError;
 use crate::lib::sequence::{Dna, Rna};
 

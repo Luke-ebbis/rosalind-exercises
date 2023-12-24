@@ -1,13 +1,21 @@
+//! # Solution to `rna`.
 use std::fmt;
 use crate::lib::sequence::strings::SequenceError;
 use crate::lib::sequence::Dna;
 use crate::lib::sequence::Frequency;
+
+/// # Simple DNA count Statistics.
+/// A simple struct to store amounts of `a`, `t`, `c` and `g`.
 pub struct DnaCount {
     pub a: i32,
     pub t: i32,
     pub c: i32,
     pub g: i32,
 }
+
+/// # Displaying A DnaCount.
+///
+/// Order of printing is `<A>, <C>, <G>, <T>`.
 impl fmt::Display for DnaCount {
     fn fmt(
         &self,
@@ -16,6 +24,10 @@ impl fmt::Display for DnaCount {
         write!(f, "{} {} {} {}", self.a, self.c, self.g, self.t)
     }
 }
+
+/// # Counting the frequencies of nucleotides in A string that might be DNA.
+///
+/// The input is a string that can be Dna, if it is not Dna, an sequence error is returned.
 pub fn dna_count(string: String) -> Result<DnaCount, SequenceError> {
     let seq = Dna::new(string.to_lowercase());
     match seq {
@@ -40,7 +52,18 @@ mod test {
     #[test]
     fn example_data() {
         let input = "AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTGATAGCAGC".to_string();
+        let expected = "20 12 17 21".to_string();
         let dna_count = dna_count(input).unwrap();
-        print!("{dna_count}");
+        let result = format!("{dna_count}");
+        assert_eq!(expected, result);
+    }
+
+    #[test]
+    fn zero_count() {
+        let input = "AAATT".to_string();
+        let expected = "20 12 17 21".to_string();
+        let dna_count = dna_count(input).unwrap();
+        let result = format!("{dna_count}");
+        assert_eq!(expected, result);
     }
 }

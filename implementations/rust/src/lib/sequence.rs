@@ -16,6 +16,8 @@ pub trait Length {
 pub trait Frequency {
     fn frequency(&self) -> HashMap<char, i32>;
 }
+
+/// TODO Make the frequency API use the known alphabet.
 impl<T: Sequence> Frequency for T {
     /// # Determine the frequency of a sequence.
     ///

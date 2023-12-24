@@ -1,3 +1,5 @@
+//! My work on rosalind in `rust`.
+
 use std::{fmt, fs};
 use clap::Parser;
 mod challenges;
@@ -14,10 +16,13 @@ struct Args {
     #[arg(name = "input data")]
     input_file: String,
 }
+
+/// # The Challenges that have been implemented thus far.
 #[derive(Debug)]
 pub enum Challenges {
-    /// The DNA counting challenge.
+    /// The DNA counting challenge using [challenges::dna].
     Dna,
+    /// The RNA counting challenge using [challenges::rna].
     Rna,
 }
 
@@ -51,6 +56,7 @@ impl Challenges {
         }
     }
 }
+
 impl fmt::Display for Challenges {
     fn fmt(
         &self,
@@ -63,6 +69,8 @@ impl fmt::Display for Challenges {
         write!(f, "{}", repr)
     }
 }
+
+/// Running the challenges.
 fn main() {
     let args = Args::parse();
     let _challenge = Challenges::new(&args.challenge, &args);
