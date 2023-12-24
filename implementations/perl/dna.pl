@@ -79,12 +79,10 @@ Obtaining the number of bases in a DNA sequence.
 \t not contain a standard DNA sequence, an error message is given.
 
  standard out: The amount of A, C, G, T bases in the input_file.";
-# die "$use_msg" unless <> else my $input = <>;
-unless(my $input  = <>) {
+my $inputArgs = <>;
+chomp $inputArgs;
+if ($inputArgs eq "") {
     print $use_msg;
 } else {
-    chomp $input;
-    print STDOUT join(" ", dna_count($input)), "\n";
+  print STDOUT join(" ", dna_count($inputArgs)), "\n";
 }
-
-# my $input = <>;
