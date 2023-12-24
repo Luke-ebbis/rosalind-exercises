@@ -1,11 +1,9 @@
-use crate::sequence::strings::SequenceError;
-use crate::sequence::strings::Sequences::Dna as DnaSequenceFactory;
-use crate::sequence::strings::Sequences::Rna as RnaSequenceFactory;
-use crate::sequence::Sequence as SequenceType;
-
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use crate::lib::sequence::strings::SequenceError;
+use crate::lib::sequence::strings::Sequences::Dna as DnaSequenceFactory;
+use crate::lib::sequence::strings::Sequences::Rna as RnaSequenceFactory;
 
 pub trait Sequence: fmt::Display {
     fn get(&self) -> &str;
@@ -95,20 +93,20 @@ pub struct Rna {
     sequence: strings::Sequence,
 }
 
-impl Sequence for crate::sequence::Rna {
+impl Sequence for Rna {
     fn get(&self) -> &str {
         &self.sequence.get()
     }
 }
-impl crate::sequence::Rna {
+impl Rna {
     /// # Create a new Dna sequence.
     pub fn new(
         sequence: impl Into<String>
-    ) -> Result<crate::sequence::Rna, SequenceError> {
+    ) -> Result<Rna, SequenceError> {
         let sequence =
             strings::Sequences::new(RnaSequenceFactory(sequence.into()));
         match sequence {
-            Ok(s) => Ok(crate::sequence::Rna { sequence: s }),
+            Ok(s) => Ok(Rna { sequence: s }),
             Err(e) => Err(e),
         }
     }
@@ -284,8 +282,7 @@ pub mod strings {
 
 #[cfg(test)]
 mod test {
-
-    use crate::sequence::strings::Sequences;
+    use crate::lib::sequence::strings::Sequences;
 
     #[test]
     fn Any() {

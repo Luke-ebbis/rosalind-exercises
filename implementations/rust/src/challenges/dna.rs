@@ -1,7 +1,7 @@
-use crate::sequence::strings::SequenceError;
-use crate::sequence::{Dna, Frequency, Sequence};
 use std::fmt;
-
+use crate::lib::sequence::strings::SequenceError;
+use crate::lib::sequence::Dna;
+use crate::lib::sequence::Frequency;
 pub struct DnaCount {
     pub a: i32,
     pub t: i32,
@@ -35,7 +35,7 @@ pub fn dna_count(string: String) -> Result<DnaCount, SequenceError> {
 
 #[cfg(test)]
 mod test {
-    use crate::dna::dna_count;
+    use crate::challenges::dna::*;
 
     #[test]
     fn example_data() {

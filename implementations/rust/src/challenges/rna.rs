@@ -1,5 +1,5 @@
-use crate::sequence::strings::SequenceError;
-use crate::sequence::{Dna, Rna};
+use crate::lib::sequence::strings::SequenceError;
+use crate::lib::sequence::{Dna, Rna};
 
 /// # Transcribe a string of (presumed) DNA to RNA.
 /// If the input string is not DNA, and error is returned.
@@ -13,9 +13,7 @@ pub fn transcribe_rna(string: String) -> Result<Rna, SequenceError> {
 
 #[cfg(test)]
 mod test {
-
-    use crate::rna::transcribe_rna;
-
+    use crate::challenges::rna::transcribe_rna;
     #[test]
     fn example_data() {
         let input = "GATGGAACTTGACTACGTAAATT".to_string();

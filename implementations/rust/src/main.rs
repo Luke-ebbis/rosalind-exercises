@@ -1,10 +1,7 @@
 use std::{fmt, fs};
-
-use crate::Challenges::Dna;
 use clap::Parser;
-
-use rust::dna::dna_count;
-use rust::rna::transcribe_rna;
+mod challenges;
+mod lib;
 
 /// My programme for the rosalind work in `rust`.
 #[derive(Parser, Debug)]
@@ -35,14 +32,14 @@ impl Challenges {
                 let input = fs::read_to_string(args.input_file.clone())
                     .expect("Should have been able to read the file")
                     .replace("\n", "");
-                let count = dna_count(input).unwrap();
+                let count = challenges::dna::dna_count(input).unwrap();
                 println!("{count}")
             },
             "rna" => {
                 let input = fs::read_to_string(args.input_file.clone())
                     .expect("Should have been able to read the file")
                     .replace("\n", "");
-                let rna = transcribe_rna(input).unwrap();
+                let rna = challenges::rna::transcribe_rna(input).unwrap();
                 println!("{rna}")
             }
             _ => unimplemented!(
