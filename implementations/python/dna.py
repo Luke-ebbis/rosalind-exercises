@@ -25,11 +25,8 @@ arguments = sys.argv[1:]
 
 def take_input() -> str:
     input = ''
-    if "--input-file" in arguments:
-        with open(arguments[1], "r") as f:
-            return "".join([x.strip("\n").lower() for x in f.readlines()])
-    else:
-        raise Exception("Error with handling the file")
+    with open(arguments[0], "r") as f:
+        return "".join([x.strip("\n").lower() for x in f.readlines()])
 
 
 def count_letters(instr: str) -> dict:
