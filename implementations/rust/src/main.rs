@@ -66,9 +66,7 @@ impl Challenges {
                 println!("{dna}")
             }
             "fib" => {
-                let input = fs::read_to_string(args.input_file.clone())
-                    .expect("Should have been able to read the file")
-                    .replace("\n", "");
+                let input = args.input_file.clone();
                 let population = challenges::fib::fibonacci_rabbits(input);
                 println!("{population}")
             }
