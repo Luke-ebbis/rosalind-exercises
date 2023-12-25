@@ -1,4 +1,5 @@
 /// Calculates the fibonacci sequence.
+/// Operates using recursion, large values of `n` lead to stack overflow.
 pub fn fibonacci(n: i64) -> i64 {
     if n <= 1 {
         n
@@ -9,6 +10,7 @@ pub fn fibonacci(n: i64) -> i64 {
 
 /// Calculates the fibonacci rabbit sequence.
 /// `n` is the amount of generations, `breeding` is the amount of offspring each generation produces.
+/// This method operates using recursion. Large values of `n` lead to stack overflow.
 pub fn fibonacci_rabbits(
     n: i64,
     breeding: i64,

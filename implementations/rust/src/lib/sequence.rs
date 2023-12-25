@@ -19,9 +19,11 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::ops::Add;
-/// https://stackoverflow.com/a/61467564/15753558 to duplicate repeat implementations.
+// https://stackoverflow.com/a/61467564/15753558 to duplicate repeat implementations.
 
 /// # Facilities to deal with sequences on a fundamental level.
+/// All sequences of text have an alphabet, a getter and a method with with you can make a new sequence of the same
+/// type.
 pub trait Sequence: fmt::Display {
     /// Get the string of the sequence.
     fn get(&self) -> &str;
@@ -40,15 +42,15 @@ pub trait Length {
 }
 
 pub trait Reverse {
-    fn reverse(self) -> Self;
+    fn reverse(&self) -> Box<Self>;
 }
 
 impl<T: Sequence> Reverse for T {
     /// # Reverse the sequence by creating a new sequence that is reversed.
-    fn reverse(self) -> Self {
+    fn reverse(&self) -> Box<T> {
         let value = self.get();
         let reversed: String = value.chars().rev().collect();
-        T::new(reversed).unwrap()
+        Box::new(T::new(reversed).unwrap())
     }
 }
 
@@ -57,7 +59,7 @@ pub trait Frequency {
 }
 
 /// TODO Make the frequency API use the known alphabet.
-impl<T: Sequence> Frequency for T {
+impl<T: ?Sized +  Sequence> Frequency for T {
     /// # Determine the frequency of a sequence.
     ///
     /// # Returns
@@ -76,7 +78,7 @@ impl<T: Sequence> Frequency for T {
     }
 }
 
-impl<T: Sequence> Length for T {
+impl<T: ?Sized + Sequence> Length for T {
     /// # Determine the length of a sequence.
     ///
     /// # Returns
@@ -88,6 +90,7 @@ impl<T: Sequence> Length for T {
 }
 
 /// A Sequence build using [strings::Alphabets::Dna].
+#[derive(Clone)]
 pub struct Dna {
     sequence: strings::Sequence,
     alphabet: Alphabet,
@@ -154,6 +157,7 @@ impl Dna {
     }
 }
 
+#[derive(Clone)]
 pub struct Rna {
     sequence: strings::Sequence,
     alphabet: Alphabet,
@@ -216,6 +220,7 @@ impl Complement for Dna {
     }
 }
 /// A Sequence build using [strings::Alphabets::Any].
+#[derive(Clone)]
 pub struct Text {
     sequence: strings::Sequence,
     alphabet: Alphabet,
@@ -257,9 +262,15 @@ pub mod strings {
 
     use std::{error::Error, fmt};
 
+    /// # Representation of a miss-mapping to a alphabet.
+    /// When a [Sequence::new()] is created, a check is made to determine if all letters from the input string are
+    /// included in the expected [Alphabet]. If this not the case, this mistake should be reported to the upper function
+    /// using this struct.
     #[derive(Debug, PartialEq)]
     pub struct SequenceError {
+        /// What the error is about, describes the name of the alphabet.
         description: String,
+        /// The set of characters that were not accepted from the sequence that raised the error.
         bad_char_set: HashSet<char>,
     }
 
@@ -269,13 +280,13 @@ pub mod strings {
             badchars: HashSet<char>,
         ) -> SequenceError {
             SequenceError {
-                description: format!("{alphabet:?}"),
+                description: alphabet.name,
                 bad_char_set: badchars,
             }
         }
 
-        fn description(_badchars: HashSet<char>) -> String {
-            format!("")
+        fn description(desc: String) -> String {
+            desc
         }
     }
 
@@ -292,9 +303,15 @@ pub mod strings {
         }
     }
 
-    #[derive(Debug)]
+    // todo check if traits carry overhead.
+
+    /// # A general sequence
+    /// Contains facilities for checking. Any functions that use the data should be implemented as traits.
+    #[derive(Debug, Clone)]
     pub struct Sequence {
+        /// Data of the sequence.
         string: String,
+        /// Expected alphabet of the sequence.
         alphabet: Alphabet,
     }
 
@@ -319,6 +336,8 @@ pub mod strings {
             &self.string
         }
 
+        /// # Validate the sequence
+        /// To determine of it contains letters that are not part of the alphabet.
         fn check_alphabet(&self) -> Option<SequenceError> {
             // We accumulate all wrong characters.
             let mut wrong_set: HashSet<char> = HashSet::new();
@@ -338,15 +357,16 @@ pub mod strings {
     }
 
     /// # An alphabet
-    /// Fields are:
-    /// - hashset: is the set of characters.
-    /// - reverse: Whether the set is supposed to be reversed: if `set` is supposed to be allowed, or disallowed.
-    /// - case: Whether the alphabet is case sensitive. Todo.
     #[derive(Clone, Debug)]
     pub struct Alphabet {
+        /// Is the set of characters what will be checked depending on `reverse`.
         set: HashSet<char>,
+        /// Unimplemented.
         case: bool,
+        /// Whether the set is supposed to be reversed: if `set` is supposed to be allowed, or disallowed.
         reverse: bool,
+        /// Name of the alphabet.
+        name: String,
     }
 
     impl Alphabet {
@@ -355,6 +375,7 @@ pub mod strings {
             chars: Vec<char>,
             case: bool,
             reverse: bool,
+            name: String,
         ) -> Alphabet {
             let map: HashSet<char> = chars.into_iter().collect();
             if !case {
@@ -364,6 +385,7 @@ pub mod strings {
                 set: map,
                 case: case,
                 reverse: reverse,
+                name: name,
             }
         }
         fn contains(
@@ -374,6 +396,10 @@ pub mod strings {
                 true => !self.set.contains(lookupchar),
                 false => self.set.contains(lookupchar),
             }
+        }
+
+        pub fn name(self) -> String {
+            self.name
         }
 
         /// Getter for the set variable
@@ -396,18 +422,25 @@ pub mod strings {
 
     impl Alphabets {
         pub fn set(self) -> Alphabet {
+            let name = match self {
+                Alphabets::Dna => "Dna".to_string(),
+                Alphabets::Rna=> "Rna".to_string(),
+                Alphabets::Any=> "Any text".to_string(),
+            };
             match self {
                 Alphabets::Rna => Alphabet::new(
                     vec!['a', 'c', 'u', 'g', 'A', 'U', 'G', 'C'],
                     true,
                     false,
+                    name,
                 ),
                 Alphabets::Dna => Alphabet::new(
                     vec!['a', 'c', 't', 'g', 'A', 'T', 'G', 'C'],
                     true,
                     false,
+                    name,
                 ),
-                Alphabets::Any => Alphabet::new(vec![], true, true),
+                Alphabets::Any => Alphabet::new(vec![], true, true, name),
             }
         }
     }
@@ -418,6 +451,7 @@ pub mod strings {
         Any(String),
         /// Dna
         Dna(String),
+        /// Rna
         Rna(String),
     }
 
@@ -438,7 +472,7 @@ mod test {
     use crate::lib::sequence::{Length, Reverse, Text};
 
     #[test]
-    fn Any() {
+    fn any() {
         println!("{}", "any".to_string());
         let any =
             Sequences::new(Sequences::Any("This may be any text".to_string()));
