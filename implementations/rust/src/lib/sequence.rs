@@ -1,3 +1,16 @@
+//! # The Sequence module
+//! You initiate a new object using New. Then you handle the sequence error. After this you use the methods.
+//! ```rust
+//! let input = "AAAACCCGGT".to_string();
+//! let expected = "ACCGGGTTTT".to_string();
+//! let result = Dna::new(input).
+//!     unwrap().
+//!     reverse().
+//!     complement().
+//!     get().
+//!     to_string();
+//! ```
+
 use crate::lib::sequence::strings::Sequences::Any as TextSequenceFactory;
 use crate::lib::sequence::strings::Sequences::Dna as DnaSequenceFactory;
 use crate::lib::sequence::strings::Sequences::Rna as RnaSequenceFactory;
@@ -234,6 +247,9 @@ impl Text {
     }
 }
 
+/// # The internals of Sequence
+///
+/// There is a Sequences struct that makes a new defined sequence.
 pub mod strings {
 
     use std::collections::HashSet;
@@ -321,6 +337,11 @@ pub mod strings {
         }
     }
 
+    /// # An alphabet
+    /// Fields are:
+    /// - hashset: is the set of characters.
+    /// - reverse: Whether the set is supposed to be reversed: if `set` is supposed to be allowed, or disallowed.
+    /// - case: Whether the alphabet is case sensitive. Todo.
     #[derive(Clone, Debug)]
     pub struct Alphabet {
         set: HashSet<char>,
@@ -361,6 +382,9 @@ pub mod strings {
         }
     }
 
+    /// # The defined alphabets
+    ///
+    /// An alphabet can be obtained using the set method.
     pub enum Alphabets {
         /// Set of ribonucleotides
         Rna,
@@ -388,6 +412,7 @@ pub mod strings {
         }
     }
 
+    /// # Method to produce a [Sequence] with a defined [Alphabet].
     pub enum Sequences {
         /// Any free text
         Any(String),

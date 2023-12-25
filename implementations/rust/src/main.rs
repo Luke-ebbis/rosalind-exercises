@@ -13,6 +13,7 @@ struct Args {
     #[arg(name = "challenge")]
     challenge: String,
 
+    /// The input dataset
     #[arg(name = "input data")]
     input_file: String,
 }
@@ -26,13 +27,16 @@ pub enum Challenges {
     Rna,
     /// Reverse complement Dna [challenges::revc].
     Revc,
+    /// Recursive rabbits.
+    Fib,
 }
 
 impl Challenges {
-    const IMPLEMENTED: [&'static Challenges; 3] = [
-        &crate::Challenges::Dna,
-        &crate::Challenges::Rna,
-        &crate::Challenges::Revc,
+    const IMPLEMENTED: [&'static Challenges; 4] = [
+        &Challenges::Dna,
+        &Challenges::Rna,
+        &Challenges::Revc,
+        &Challenges::Fib,
     ];
     fn new(
         string: &str,
@@ -57,13 +61,20 @@ impl Challenges {
                 let input = fs::read_to_string(args.input_file.clone())
                     .expect("Should have been able to read the file")
                     .replace("\n", "");
-                let rna =
+                let dna =
                     challenges::revc::dna_reverse_complement(input).unwrap();
-                println!("{rna}")
+                println!("{dna}")
+            }
+            "fib" => {
+                let input = fs::read_to_string(args.input_file.clone())
+                    .expect("Should have been able to read the file")
+                    .replace("\n", "");
+                let population = challenges::fib::fibonacci_rabbits(input);
+                println!("{population}")
             }
             _ => unimplemented!(
                 "Supplied challenge string: `{}' is not yet implemented!\n\
-            the challenges {:?} can be chosen.",
+                 the challenges {:?} can be chosen.",
                 string,
                 Challenges::IMPLEMENTED
             ),
@@ -80,6 +91,7 @@ impl fmt::Display for Challenges {
             Challenges::Dna => "dna".to_string(),
             Challenges::Rna => "rna".to_string(),
             Challenges::Revc => "revc".to_string(),
+            Challenges::Fib => "fib".to_string(),
         };
         write!(f, "{}", repr)
     }
