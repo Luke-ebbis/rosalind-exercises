@@ -37,6 +37,7 @@ pub trait Sequence: fmt::Display {
         Self: Sized;
 }
 
+
 pub trait Length {
     fn length(&self) -> i32;
 }
@@ -252,6 +253,14 @@ impl Text {
     }
 }
 
+// TODO do transcription by Into Rna from DNA
+impl Into<Rna> for Dna {
+    /// # Transcribe the sequence into [Rna].
+    fn into(self) -> Rna {
+        self.transcribe()
+    }
+}
+
 /// # The internals of Sequence
 ///
 /// There is a Sequences struct that makes a new defined sequence.
@@ -266,7 +275,7 @@ pub mod strings {
     /// When a [Sequence::new()] is created, a check is made to determine if all letters from the input string are
     /// included in the expected [Alphabet]. If this not the case, this mistake should be reported to the upper function
     /// using this struct.
-    #[derive(Debug, PartialEq)]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SequenceError {
         /// What the error is about, describes the name of the alphabet.
         description: String,
