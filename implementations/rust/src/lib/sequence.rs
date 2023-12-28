@@ -19,6 +19,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::ops::Add;
+use duplicate::duplicate_item;
 // https://stackoverflow.com/a/61467564/15753558 to duplicate repeat implementations.
 
 /// # Facilities to deal with sequences on a fundamental level.
@@ -91,7 +92,7 @@ impl<T: ?Sized + Sequence> Length for T {
 }
 
 /// A Sequence build using [strings::Alphabets::Dna].
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Dna {
     sequence: strings::Sequence,
     alphabet: Alphabet,
@@ -158,7 +159,7 @@ impl Dna {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Rna {
     sequence: strings::Sequence,
     alphabet: Alphabet,
@@ -220,6 +221,23 @@ impl Complement for Dna {
         Self::new(outstring).unwrap()
     }
 }
+
+pub trait GcFraction {
+    fn gc(&self) -> f32;
+}
+
+#[duplicate_item(name; [Dna]; [Rna])]
+impl GcFraction for name {
+    fn gc(&self) -> f32 {
+        let freq = &self.frequency();
+        let count_cg = freq.get(&'C').unwrap() + freq.get(&'c').unwrap() + freq.get(&'G').unwrap() + freq.get(&'g').unwrap();
+        // When we divide we must first make sure to cast to f32.
+        let fraction = count_cg as f32 / self.length() as f32;
+        fraction
+    }
+}
+
+
 /// A Sequence build using [strings::Alphabets::Any].
 #[derive(Clone)]
 pub struct Text {
