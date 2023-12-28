@@ -132,9 +132,17 @@ pub mod bio {
             self.records.keys().len().to_owned()
         }
 
+
+        /// # Return the id values of each fasta sequence in the set.
         pub fn keys(&self) -> Vec<String> {
             self.records.keys().into_iter().map(|x| x.to_owned()).collect()
         }
+
+        // pub fn get(self, id: impl Into<String>) -> &'static FastaRecord {
+        //     let id = id.into();
+        //     let fasta = self.records.get(&id).unwrap();
+        //     fasta
+        // }
 
         fn insert_set(set: &mut HashMap<String, FastaRecord>,
                       dna: impl  Into<String>, headers: (String, Option<String>)) -> Result<(), SequenceError> {
