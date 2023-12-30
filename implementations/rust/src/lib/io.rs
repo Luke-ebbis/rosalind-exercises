@@ -1,7 +1,10 @@
+//! # Input and output of files
+
 // Usefull documentation https://stackoverflow.com/questions/41301239/how-to-unbox-elements-contained-in-polymorphic-vectors
 
 
 /// # Biological files.
+/// Currently, [FastaRecords] are implemented.
 pub mod bio {
     use std::collections::{HashMap, HashSet};
     use std::fmt;
@@ -42,6 +45,7 @@ pub mod bio {
         }
     }
 
+    /// # A container to hold fasta record data
     #[derive(Debug)]
     pub struct FastaRecord {
         /// This struct implements all traits from [crate::lib::sequence::Sequence]. If you want more specific methods
@@ -57,73 +61,56 @@ pub mod bio {
         pub fn new(input: Biosequence, identifier: impl Into<String>, description: Option<String>) -> Result<FastaRecord, SequenceError> {
             Ok(Self {sequence: input, identifier: identifier.into(), description: description})
         }
+
+        pub fn get_sequence(&self) -> &Biosequence {
+            &self.sequence
+        }
     }
 
-    // #[derive(Debug, PartialEq, Clone)]
-    // pub struct FastaParseError {
-    //     /// What the error is about.
-    //     description: String,
-    // }
-    //
-    // impl FastaParseError {
-    //     pub fn new(
-    //         description: String
-    //     ) -> FastaParseError {
-    //         Self {
-    //             description: description,
-    //         }
-    //     }
-    // }
-    //
-    // impl fmt::Display for FastaParseError {
-    //     fn fmt(
-    //         &self,
-    //         f: &mut fmt::Formatter,
-    //     ) -> fmt::Result {
-    //         write!(
-    //             f,
-    //             "{:?}\n",
-    //             self.description
-    //         )
-    //     }
-    // }
     // TODO multiple error handling by enumerating possible error conditions: https://stackoverflow.com/questions/71812362/rust-error-handling-capturing-multiple-errors
 
+
+    /// # The possible error states of the [FastaRecords] struct.
+    #[derive(Debug)]
+    pub enum FastaReadError {
+        /// When the file contains characters that cannot be understood by `rust`.
+        FileIoError(Error),
+        /// When the sequence contains letters that do not fit the [Alphabet].
+        SequenceContentError(SequenceError)
+    }
 
     #[derive(Debug)]
     pub struct FastaRecords {
         records: HashMap<String, FastaRecord>
     }
 
+
     impl FastaRecords {
         /// # Parse a fasta file object into a Struct of fasta records.
-        pub fn new(f: File) -> Result<FastaRecords, Error> {
+        pub fn new(f: File) -> Result<FastaRecords, FastaReadError> {
             let mut fastas: HashMap<String, FastaRecord> = HashMap::new();
             let reader = BufReader::new(f);
             let mut seq: Vec<String> = Vec::new();
             let mut header : (String, Option<String>) = ("".to_string(), None);
             for line in reader.lines() {
-                let current_line = line?;
+                let current_line = match line {
+                    Ok(line) => line,
+                    Err(e) => return Err(FastaReadError::FileIoError(e)),
+                };
                 if current_line.starts_with(">") {
-                    println!("{:?}", seq.clone());
-                    println!("**in name region");
                     let header = Self::metadata(&current_line);
-                    println!("{:?}", header);
-                    FastaRecords::insert_set(&mut fastas, seq.join(""), header.clone());
-                    // fastas.insert(
-                    //     header.0.clone(),
-                    //     FastaRecord::new(Biosequence::DnaType(Dna::new(seq.join("")).unwrap()), header.0, header.1).unwrap(),
-                    // );
-                    let mut seq: Vec<String> = Vec::new();
+                    match FastaRecords::insert_set(&mut fastas, seq.join(""), header.clone()) {
+                        Ok(_) => {},
+                        Err(e) => {return Err(FastaReadError::SequenceContentError(e))},
+                    };
                 } else {
                     &seq.push(current_line.to_string().replace("\n", " "));
                 }
             }
-            FastaRecords::insert_set(&mut fastas, seq.join(""), header.clone());
-            // fastas.insert(
-            //     header.0.clone(),
-            //     FastaRecord::new(Biosequence::DnaType(Dna::new(seq.join("")).unwrap()), header.0, header.1).unwrap(),
-            // );
+            match FastaRecords::insert_set(&mut fastas, seq.join(""), header.clone()) {
+                Ok(_) => {},
+                Err(e) => {return Err(FastaReadError::SequenceContentError(e))},
+            };
             Ok(Self {records: fastas})
         }
 
@@ -138,12 +125,13 @@ pub mod bio {
             self.records.keys().into_iter().map(|x| x.to_owned()).collect()
         }
 
-        // pub fn get(self, id: impl Into<String>) -> &'static FastaRecord {
-        //     let id = id.into();
-        //     let fasta = self.records.get(&id).unwrap();
-        //     fasta
-        // }
+        pub fn get(&self, id: impl Into<String>) -> &FastaRecord {
+            let id = id.into();
+            let fasta = self.records.get(&id).unwrap();
+            fasta.clone()
+        }
 
+        /// # Insert a DNA sequence.
         fn insert_set(set: &mut HashMap<String, FastaRecord>,
                       dna: impl  Into<String>, headers: (String, Option<String>)) -> Result<(), SequenceError> {
             let dna = dna.into();
@@ -177,7 +165,7 @@ mod test {
     use std::fs::File;
     use crate::lib::io::bio::{Biosequence, FastaRecord, FastaRecords};
     use crate::lib::io::bio::Biosequence::DnaType;
-    use crate::lib::sequence::{Complement, Frequency, Length, Dna, Rna};
+    use crate::lib::sequence::{Complement, Frequency, Length, Dna, Rna, GcFraction};
     use crate::lib::sequence::strings::Alphabets::Dna as DnaNucleotides;
 
     #[test]
@@ -205,8 +193,24 @@ mod test {
         let file = File::open("data/rosalind_gc.txt").unwrap();
         let fasta = FastaRecords::new(file).unwrap();
         let count = fasta.len();
-        dbg!(fasta.keys());
         assert_eq!(count, 5 as usize);
+        let id = fasta.keys();
+        let fasta_rec = fasta.get(id.get(1).unwrap());
+        let seq1 = match fasta_rec.get_sequence() {
+            DnaType(dna) => {
+                let len = dna.to_owned().length();
+                dbg!(len);
+                let x = dna.to_owned().gc();
+                println!("{}", x)},
+            _ => panic!()
+        };
+    }
 
+    #[test]
+    fn false_fasta() {
+        let file = File::open("data/false_fasta.txt").unwrap();
+        let fasta = FastaRecords::new(file).unwrap();
+        let id = fasta.keys();
+        println!("{:?}", id);
     }
 }
