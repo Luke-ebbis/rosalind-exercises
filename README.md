@@ -21,9 +21,9 @@ I try different programming languages:
   run the binary.
 * perl because it was popular in the past.
 * lisp because it is fundamental to rust and r programming.
-  run the binary.
+  Run the binary for each code.
 * Haskell, to get a better understanding of functional programming.
-  run with ghc.
+  Run with ghc.
 
 # Programmes
 
@@ -35,11 +35,14 @@ argument.
 
 ## Completed assignments
 
-| Task / Language                              | rust               | R    | python             | julia              | common lisp        |
-| -------------------------------------------- | ------------------ | ---- | ------------------ | ------------------ | ------------------ |
-| [dna](https://rosalind.info/problems/dna/)   | :white_check_mark: | :x:  | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| [rna](https://rosalind.info/problems/rna/)   | :white_check_mark: |      |                    |                    |                    |
-| [revp](https://rosalind.info/problems/revc/) | :white_check_mark: |      |                    |                    |                    |
+| Task / Language                              | rust                          | R    | python             | julia              | common lisp        | perl               |
+| -------------------------------------------- | ----------------------------- | ---- | ------------------ | ------------------ | ------------------ | ------------------ |
+| [dna](https://rosalind.info/problems/dna/)   | :white_check_mark:            |      | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| [rna](https://rosalind.info/problems/rna/)   | :white_check_mark:            |      | :white_check_mark: |                    |                    |                    |
+| [revp](https://rosalind.info/problems/revc/) | :white_check_mark:            |      | :white_check_mark: |                    |                    |                    |
+| [fib](https://rosalind.info/problems/fib/)   | :negative_squared_cross_mark: |      | :white_check_mark: | :white_check_mark: | :white_check_mark: |                    |
+| [gc](https://rosalind.info/problems/gc/)     | :white_check_mark:            |      | :white_check_mark: | :white_check_mark: |                    |                    |
+| [hamm](https://rosalind.info/problems/hamm/) |                               |      | :white_check_mark: |                    |                    | :white_check_mark: |
 
 
 
