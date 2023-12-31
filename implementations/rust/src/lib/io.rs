@@ -2,17 +2,19 @@
 
 // Usefull documentation https://stackoverflow.com/questions/41301239/how-to-unbox-elements-contained-in-polymorphic-vectors
 
-
 /// # Biological files.
-/// Currently, [FastaRecords] are implemented.
+/// Currently, [bio::FastaRecords] are implemented.
 pub mod bio {
+    use crate::lib::io::bio;
+    use crate::lib::sequence::strings::{
+        Alphabet, Alphabets, Sequence, SequenceError,
+    };
+    use crate::lib::sequence::{Dna, Length, Rna};
+    use clap::builder::Str;
     use std::collections::{HashMap, HashSet};
     use std::fmt;
-    use std::fs::{File, metadata};
+    use std::fs::{metadata, File};
     use std::io::{BufRead, BufReader, Error};
-    use clap::builder::Str;
-    use crate::lib::sequence::{Dna, Length, Rna};
-    use crate::lib::sequence::strings::{Alphabet, Alphabets, Sequence, SequenceError};
 
     /// # The Bio sequences for which there is an implementation.
     #[derive(Clone, Debug)]
@@ -24,12 +26,15 @@ pub mod bio {
     }
 
     impl Biosequence {
-        pub fn new(input: impl  Into<String>, alphabet: Alphabets) -> Result<Biosequence, SequenceError> {
+        pub fn new(
+            input: impl Into<String>,
+            alphabet: Alphabets,
+        ) -> Result<Biosequence, SequenceError> {
             let input = input.into();
             match alphabet {
                 Alphabets::Dna => Ok(Self::DnaType(Dna::new(input)?)),
                 Alphabets::Rna => Ok(Self::RnaType(Rna::new(input)?)),
-                _ => unimplemented!()
+                _ => unimplemented!(),
             }
         }
 
@@ -46,20 +51,30 @@ pub mod bio {
     }
 
     /// # A container to hold fasta record data
+    /// This struct can handle `fasta` data from `Dna` and from `Rna`. In theory, sequences from any alphabet are
+    /// possible.
     #[derive(Debug)]
     pub struct FastaRecord {
         /// This struct implements all traits from [crate::lib::sequence::Sequence]. If you want more specific methods
         /// that are implemented by [Biosequence], then you should match on this.
-        sequence: Biosequence,
+        pub sequence: Biosequence,
         // Unique identifier.
-        identifier: String,
+        pub identifier: String,
         /// Optional description.
-        description: Option<String>,
+        pub description: Option<String>,
     }
 
     impl FastaRecord {
-        pub fn new(input: Biosequence, identifier: impl Into<String>, description: Option<String>) -> Result<FastaRecord, SequenceError> {
-            Ok(Self {sequence: input, identifier: identifier.into(), description: description})
+        pub fn new(
+            input: Biosequence,
+            identifier: impl Into<String>,
+            description: Option<String>,
+        ) -> Result<FastaRecord, SequenceError> {
+            Ok(Self {
+                sequence: input,
+                identifier: identifier.into(),
+                description: description,
+            })
         }
 
         pub fn get_sequence(&self) -> &Biosequence {
@@ -67,23 +82,20 @@ pub mod bio {
         }
     }
 
-    // TODO multiple error handling by enumerating possible error conditions: https://stackoverflow.com/questions/71812362/rust-error-handling-capturing-multiple-errors
-
-
     /// # The possible error states of the [FastaRecords] struct.
     #[derive(Debug)]
     pub enum FastaReadError {
         /// When the file contains characters that cannot be understood by `rust`.
         FileIoError(Error),
         /// When the sequence contains letters that do not fit the [Alphabet].
-        SequenceContentError(SequenceError)
+        SequenceContentError(SequenceError),
     }
 
+    /// # A struct to hold a collection of fasta sequences.
     #[derive(Debug)]
     pub struct FastaRecords {
-        records: HashMap<String, FastaRecord>
+        records: HashMap<String, FastaRecord>,
     }
-
 
     impl FastaRecords {
         /// # Parse a fasta file object into a Struct of fasta records.
@@ -91,27 +103,53 @@ pub mod bio {
             let mut fastas: HashMap<String, FastaRecord> = HashMap::new();
             let reader = BufReader::new(f);
             let mut seq: Vec<String> = Vec::new();
-            let mut header : (String, Option<String>) = ("".to_string(), None);
-            for line in reader.lines() {
-                let current_line = match line {
-                    Ok(line) => line,
-                    Err(e) => return Err(FastaReadError::FileIoError(e)),
-                };
+            let mut header: (String, Option<String>) = ("".to_string(), None);
+            let mut lines = reader.lines();
+            while let Some(line) = lines.next() {
+                let current_line = line.unwrap().replace("\n", "");
                 if current_line.starts_with(">") {
-                    let header = Self::metadata(&current_line);
-                    match FastaRecords::insert_set(&mut fastas, seq.join(""), header.clone()) {
-                        Ok(_) => {},
-                        Err(e) => {return Err(FastaReadError::SequenceContentError(e))},
-                    };
+                    if seq.len() != 0 && header.0 != ""{
+                        // Collecting records.
+                        match FastaRecords::insert_set(
+                            &mut fastas,
+                            seq.join(""),
+                            header.clone(),
+                        ) {
+                            Ok(_) => {}
+                            Err(e) => {
+                                return Err(FastaReadError::SequenceContentError(
+                                    e,
+                                ))
+                            }
+                        };
+                        // println!("reading for {header:?} complete!");
+                        seq.clear();
+                    }
+                    // println!("header -- {}", &current_line);
+                    header = Self::metadata(&current_line);
                 } else {
-                    &seq.push(current_line.to_string().replace("\n", " "));
+                    // println!("sequence for {header:?} -- {}", &current_line);
+                    seq.push(current_line);
                 }
             }
-            match FastaRecords::insert_set(&mut fastas, seq.join(""), header.clone()) {
-                Ok(_) => {},
-                Err(e) => {return Err(FastaReadError::SequenceContentError(e))},
-            };
-            Ok(Self {records: fastas})
+            if seq.len() != 0 && header.0 != ""{
+                // mopping up the old records
+                // println!("reading for {header:?} complete!");
+                match FastaRecords::insert_set(
+                    &mut fastas,
+                    seq.join(""),
+                    header.clone(),
+                ) {
+                    Ok(_) => {}
+                    Err(e) => {
+                        return Err(FastaReadError::SequenceContentError(
+                            e,
+                        ))
+                    }
+                };
+                seq.clear();
+            }
+            Ok(Self { records: fastas })
         }
 
         /// # Return the number of fasta records within the container
@@ -119,28 +157,42 @@ pub mod bio {
             self.records.keys().len().to_owned()
         }
 
-
         /// # Return the id values of each fasta sequence in the set.
         pub fn keys(&self) -> Vec<String> {
-            self.records.keys().into_iter().map(|x| x.to_owned()).collect()
+            self.records
+                .keys()
+                .into_iter()
+                .map(|x| x.to_owned())
+                .collect()
         }
 
-        pub fn get(&self, id: impl Into<String>) -> &FastaRecord {
+        /// # Get a sequence from the FASTA object.
+        pub fn get(
+            &self,
+            id: impl Into<String>,
+        ) -> &FastaRecord {
             let id = id.into();
             let fasta = self.records.get(&id).unwrap();
             fasta.clone()
         }
 
         /// # Insert a DNA sequence.
-        fn insert_set(set: &mut HashMap<String, FastaRecord>,
-                      dna: impl  Into<String>, headers: (String, Option<String>)) -> Result<(), SequenceError> {
+        fn insert_set(
+            set: &mut HashMap<String, FastaRecord>,
+            dna: impl Into<String>,
+            headers: (String, Option<String>),
+        ) -> Result<(), SequenceError> {
             let dna = dna.into();
             let input_dna = Dna::new(dna)?;
             if headers.0.clone() != "" {
-                set.insert(headers.0.clone(),
-                           FastaRecord::new(Biosequence::DnaType(input_dna),
-                                            headers.0,
-                                            headers.1)?);
+                set.insert(
+                    headers.0.clone(),
+                    FastaRecord::new(
+                        Biosequence::DnaType(input_dna),
+                        headers.0,
+                        headers.1,
+                    )?,
+                );
             };
             Ok(())
         }
@@ -151,7 +203,7 @@ pub mod bio {
             let header: Vec<&str> = binding.split(" ").into_iter().collect();
             let name = header.get(0).unwrap().to_owned().to_string();
             // resolving the description to an option.
-            let description= match header[1..].join(" ").as_str() {
+            let description = match header[1..].join(" ").as_str() {
                 "" => None,
                 a => Some(a.to_string()),
             };
@@ -162,30 +214,38 @@ pub mod bio {
 
 #[cfg(test)]
 mod test {
-    use std::fs::File;
-    use crate::lib::io::bio::{Biosequence, FastaRecord, FastaRecords};
     use crate::lib::io::bio::Biosequence::DnaType;
-    use crate::lib::sequence::{Complement, Frequency, Length, Dna, Rna, GcFraction};
+    use crate::lib::io::bio::{Biosequence, FastaRecord, FastaRecords};
     use crate::lib::sequence::strings::Alphabets::Dna as DnaNucleotides;
+    use crate::lib::sequence::{
+        Complement, Dna, Frequency, GcFraction, Length, Rna,
+    };
+    use std::fs::File;
 
     #[test]
     fn types_test() {
-        let x = Biosequence::new("AATTT",  DnaNucleotides).unwrap();
+        let x = Biosequence::new("AATTT", DnaNucleotides).unwrap();
         let y = x.clone().to_sequence();
         let len = y.length();
-        let seq= y.get();
+        let seq = y.get();
         let com = y.frequency();
         match x {
-            DnaType(dna) => {let t =dna.complement().complement();
+            DnaType(dna) => {
+                let t = dna.complement().complement();
                 let r: Rna = t.to_owned().into();
-                t},
+                t
+            }
             _ => panic!(),
         };
     }
 
     #[test]
     fn fasta_test() {
-        let dna = FastaRecord::new(Biosequence::new("AAA", DnaNucleotides).unwrap(), "test one", None);
+        let dna = FastaRecord::new(
+            Biosequence::new("AAA", DnaNucleotides).unwrap(),
+            "test one",
+            None,
+        );
     }
 
     #[test]
@@ -201,16 +261,26 @@ mod test {
                 let len = dna.to_owned().length();
                 dbg!(len);
                 let x = dna.to_owned().gc();
-                println!("{}", x)},
-            _ => panic!()
+                println!("{}", x)
+            }
+            _ => panic!(),
         };
     }
 
     #[test]
+    fn test_short_seq() {
+        let file = File::open("data/gc-test.txt").unwrap();
+        let fasta = FastaRecords::new(file).unwrap();
+        let fasta_5959 = fasta.get("Rosalind_5959");
+        assert_eq!(fasta_5959.sequence.clone().to_sequence().to_string(), "CCATCGGTAGCGCATCCTTAGTCCAATTAAGTCCCTATCCAGGCGCTCCGCCGAAGGTCTATATCCATTTGTCAGCAGACACGC");
+        dbg!(fasta);
+    }
+
+    #[test]
+    #[should_panic]
     fn false_fasta() {
         let file = File::open("data/false_fasta.txt").unwrap();
         let fasta = FastaRecords::new(file).unwrap();
         let id = fasta.keys();
-        println!("{:?}", id);
     }
 }

@@ -15,11 +15,11 @@ use crate::lib::sequence::strings::Sequences::Any as TextSequenceFactory;
 use crate::lib::sequence::strings::Sequences::Dna as DnaSequenceFactory;
 use crate::lib::sequence::strings::Sequences::Rna as RnaSequenceFactory;
 use crate::lib::sequence::strings::{Alphabet, Alphabets, SequenceError};
+use duplicate::duplicate_item;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::ops::Add;
-use duplicate::duplicate_item;
 // https://stackoverflow.com/a/61467564/15753558 to duplicate repeat implementations.
 
 /// # Facilities to deal with sequences on a fundamental level.
@@ -37,7 +37,6 @@ pub trait Sequence: fmt::Display {
     where
         Self: Sized;
 }
-
 
 pub trait Length {
     fn length(&self) -> i32;
@@ -61,7 +60,7 @@ pub trait Frequency {
 }
 
 /// TODO Make the frequency API use the known alphabet.
-impl<T: ?Sized +  Sequence> Frequency for T {
+impl<T: ?Sized + Sequence> Frequency for T {
     /// # Determine the frequency of a sequence.
     ///
     /// # Returns
@@ -230,13 +229,15 @@ pub trait GcFraction {
 impl GcFraction for name {
     fn gc(&self) -> f32 {
         let freq = &self.frequency();
-        let count_cg = freq.get(&'C').unwrap() + freq.get(&'c').unwrap() + freq.get(&'G').unwrap() + freq.get(&'g').unwrap();
+        let count_cg = freq.get(&'C').unwrap()
+            + freq.get(&'c').unwrap()
+            + freq.get(&'G').unwrap()
+            + freq.get(&'g').unwrap();
         // When we divide we must first make sure to cast to f32.
         let fraction = count_cg as f32 / self.length() as f32;
         fraction
     }
 }
-
 
 /// A Sequence build using [strings::Alphabets::Any].
 #[derive(Clone)]
@@ -451,8 +452,8 @@ pub mod strings {
         pub fn set(self) -> Alphabet {
             let name = match self {
                 Alphabets::Dna => "Dna".to_string(),
-                Alphabets::Rna=> "Rna".to_string(),
-                Alphabets::Any=> "Any text".to_string(),
+                Alphabets::Rna => "Rna".to_string(),
+                Alphabets::Any => "Any text".to_string(),
             };
             match self {
                 Alphabets::Rna => Alphabet::new(
@@ -495,8 +496,9 @@ pub mod strings {
 
 #[cfg(test)]
 mod test {
-    use crate::lib::sequence::strings::Sequences;
-    use crate::lib::sequence::{Length, Reverse, Text};
+    use crate::lib::sequence::strings::Sequences::Dna;
+    use crate::lib::sequence::strings::{Sequence, Sequences};
+    use crate::lib::sequence::{GcFraction, Length, Reverse, Text};
 
     #[test]
     fn any() {
@@ -514,5 +516,18 @@ mod test {
 
         let reversed = any.reverse();
         print!("{reversed}");
+    }
+
+    #[test]
+    fn cg_percentage() {
+        let seq = crate::lib::sequence::Dna::new("AAAA").unwrap();
+        let seqCg = seq.gc();
+        assert_eq!(seqCg, 0.0);
+        let seq = crate::lib::sequence::Dna::new("AAGG").unwrap();
+        let seqCg = seq.gc();
+        assert_eq!(seqCg, 0.5);
+        let seq = crate::lib::sequence::Dna::new("CCGG").unwrap();
+        let seqCg = seq.gc();
+        assert_eq!(seqCg, 1.0);
     }
 }

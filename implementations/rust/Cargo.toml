@@ -8,3 +8,4 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.4.11", features = ["derive"] }
+duplicate = "1.0.0"

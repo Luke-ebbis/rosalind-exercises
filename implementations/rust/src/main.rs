@@ -29,14 +29,17 @@ pub enum Challenges {
     Revc,
     /// Recursive rabbits.
     Fib,
+    /// Gc content of a fasta file.
+    Gc,
 }
 
 impl Challenges {
-    const IMPLEMENTED: [&'static Challenges; 4] = [
+    const IMPLEMENTED: [&'static Challenges; 5] = [
         &Challenges::Dna,
         &Challenges::Rna,
         &Challenges::Revc,
         &Challenges::Fib,
+        &Challenges::Gc,
     ];
     fn new(
         string: &str,
@@ -70,6 +73,14 @@ impl Challenges {
                 let population = challenges::fib::fibonacci_rabbits(input);
                 println!("{population}")
             }
+            "gc" => {
+                let input = fs::read_to_string(args.input_file.clone())
+                    .expect("Should have been able to read the file")
+                    .replace("\n", "");
+                let gc =
+                    challenges::gc::highest_cg_from_fasta(input).unwrap();
+                println!("{gc}")
+            }
             _ => unimplemented!(
                 "Supplied challenge string: `{}' is not yet implemented!\n\
                  the challenges {:?} can be chosen.",
@@ -90,6 +101,7 @@ impl fmt::Display for Challenges {
             Challenges::Rna => "rna".to_string(),
             Challenges::Revc => "revc".to_string(),
             Challenges::Fib => "fib".to_string(),
+            Challenges::Gc => "gc".to_string(),
         };
         write!(f, "{}", repr)
     }
