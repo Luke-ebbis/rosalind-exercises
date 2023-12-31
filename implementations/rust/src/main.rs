@@ -15,7 +15,7 @@ struct Args {
 
     /// The input dataset
     #[arg(name = "input data")]
-    input_file: String,
+    input_data: String,
 }
 
 /// # The Challenges that have been implemented thus far.
@@ -47,21 +47,21 @@ impl Challenges {
     ) -> () {
         match string {
             "dna" => {
-                let input = fs::read_to_string(args.input_file.clone())
+                let input = fs::read_to_string(args.input_data.clone())
                     .expect("Should have been able to read the file")
                     .replace("\n", "");
                 let count = challenges::dna::dna_count(input).unwrap();
                 println!("{count}")
             }
             "rna" => {
-                let input = fs::read_to_string(args.input_file.clone())
+                let input = fs::read_to_string(args.input_data.clone())
                     .expect("Should have been able to read the file")
                     .replace("\n", "");
                 let rna = challenges::rna::transcribe_rna(input).unwrap();
                 println!("{rna}")
             }
             "revc" => {
-                let input = fs::read_to_string(args.input_file.clone())
+                let input = fs::read_to_string(args.input_data.clone())
                     .expect("Should have been able to read the file")
                     .replace("\n", "");
                 let dna =
@@ -69,16 +69,13 @@ impl Challenges {
                 println!("{dna}")
             }
             "fib" => {
-                let input = args.input_file.clone();
+                let input = args.input_data.clone();
                 let population = challenges::fib::fibonacci_rabbits(input);
                 println!("{population}")
             }
             "gc" => {
-                let input = fs::read_to_string(args.input_file.clone())
-                    .expect("Should have been able to read the file")
-                    .replace("\n", "");
                 let gc =
-                    challenges::gc::highest_cg_from_fasta(input).unwrap();
+                    challenges::gc::highest_cg_from_fasta(&args.input_data).unwrap();
                 println!("{gc}")
             }
             _ => unimplemented!(
