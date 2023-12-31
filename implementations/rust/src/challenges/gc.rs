@@ -1,10 +1,10 @@
 //! # Solution to the `gc` challenge
 //! Open an `fasta` file, determine which record has the highest `GC`%.
 
-use crate::lib::io::bio::{FastaReadError, FastaRecord, FastaRecords};
-use crate::lib::sequence::strings::SequenceError;
+use crate::lib::io::bio::{FastaReadError};
+
 use crate::lib::sequence::GcFraction;
-use std::cmp::max;
+
 use std::fs::File;
 use std::io::Error;
 

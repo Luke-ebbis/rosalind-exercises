@@ -5,15 +5,15 @@
 /// # Biological files.
 /// Currently, [bio::FastaRecords] are implemented.
 pub mod bio {
-    use crate::lib::io::bio;
+    
     use crate::lib::sequence::strings::{
-        Alphabet, Alphabets, Sequence, SequenceError,
+        Alphabets, SequenceError,
     };
-    use crate::lib::sequence::{Dna, Length, Rna};
-    use clap::builder::Str;
-    use std::collections::{HashMap, HashSet};
-    use std::fmt;
-    use std::fs::{metadata, File};
+    use crate::lib::sequence::{Dna, Rna};
+    
+    use std::collections::{HashMap};
+    
+    use std::fs::{File};
     use std::io::{BufRead, BufReader, Error};
 
     /// # The Bio sequences for which there is an implementation.
@@ -173,7 +173,7 @@ pub mod bio {
         ) -> &FastaRecord {
             let id = id.into();
             let fasta = self.records.get(&id).unwrap();
-            fasta.clone()
+            fasta
         }
 
         /// # Insert a DNA sequence.

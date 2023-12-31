@@ -19,7 +19,7 @@ use duplicate::duplicate_item;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::ops::Add;
+
 // https://stackoverflow.com/a/61467564/15753558 to duplicate repeat implementations.
 
 /// # Facilities to deal with sequences on a fundamental level.
@@ -30,7 +30,7 @@ pub trait Sequence: fmt::Display {
     fn get(&self) -> &str;
 
     /// Get the [Alphabet] of the sequence.
-    fn getAlphabet(&self) -> Alphabet;
+    fn get_alphabet(&self) -> Alphabet;
 
     /// Making a new sequence of the same type using a
     fn new(string: impl Into<String>) -> Result<Self, SequenceError>
@@ -68,7 +68,7 @@ impl<T: ?Sized + Sequence> Frequency for T {
     fn frequency(&self) -> HashMap<char, i32> {
         let seq = self.get();
         let mut letter_counts: HashMap<char, i32> = HashMap::new();
-        let set = self.getAlphabet().set();
+        let set = self.get_alphabet().set();
         for c in set {
             let _ = *letter_counts.entry(c).or_insert(0);
         }
@@ -128,7 +128,7 @@ impl Sequence for Dna {
         &self.sequence.get()
     }
 
-    fn getAlphabet(&self) -> Alphabet {
+    fn get_alphabet(&self) -> Alphabet {
         self.alphabet.clone()
     }
 
@@ -169,7 +169,7 @@ impl Sequence for Rna {
     fn get(&self) -> &str {
         &self.sequence.get()
     }
-    fn getAlphabet(&self) -> Alphabet {
+    fn get_alphabet(&self) -> Alphabet {
         self.alphabet.clone()
     }
     fn new(sequence: impl Into<String>) -> Result<Self, SequenceError> {
@@ -250,7 +250,7 @@ impl Sequence for Text {
     fn get(&self) -> &str {
         &self.sequence.get()
     }
-    fn getAlphabet(&self) -> Alphabet {
+    fn get_alphabet(&self) -> Alphabet {
         self.alphabet.clone()
     }
     fn new(sequence: impl Into<String>) -> Result<Self, SequenceError> {

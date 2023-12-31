@@ -1,8 +1,8 @@
 //! # Solution to `Revc`.
 use crate::lib::sequence::strings::SequenceError;
-use crate::lib::sequence::Frequency;
+
 use crate::lib::sequence::{Complement, Dna, Reverse, Sequence};
-use std::fmt;
+
 
 /// # Get the reverse complement of an input (Dna?) String.
 /// If the string is not Dna, a sequence error is returned.
