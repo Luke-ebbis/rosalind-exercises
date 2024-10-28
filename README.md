@@ -22,8 +22,6 @@ I try different programming languages:
 * perl because it was popular in the past.
 * lisp because it is fundamental to rust and r programming.
   Run the binary for each code.
-* Haskell, to get a better understanding of functional programming.
-  Run with ghc.
 
 # Programmes
 
